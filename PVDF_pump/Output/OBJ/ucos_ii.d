@@ -1,0 +1,15 @@
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\ucos_ii.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\ucos_ii.h
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\USER\app_cfg.h
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\USER\os_cfg.h
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Ports\os_cpu.h
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_core.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_flag.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_mbox.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_mem.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_mutex.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_q.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_sem.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_task.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_time.c
+..\obj\ucos_ii.o: ..\..\..\..\..\..\..\..\Desktop\PVDF_stm32+uCOSII\Source\os_tmr.c
