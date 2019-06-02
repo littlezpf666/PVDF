@@ -505,7 +505,7 @@ u8 TP_Init(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3|GPIO_Pin_2;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3|GPIO_Pin_4;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU ;  //…œ¿≠ ‰»Î
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
  	   

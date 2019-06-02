@@ -1,9 +1,5 @@
-#include "stm32f10x.h"
+
 #include "key.h"
-#include "sys.h" 
-#include "delay.h"
-#include "led.h"
-						  
 								    
 //按键处理函数
 //返回按键值
@@ -13,24 +9,33 @@
 //2，KEY1按下
 //3，KEY3按下 WK_UP
 //注意此函数有响应优先级,KEY0>KEY1>KEY_UP!!
-
-
-
-
-
 void EXTIX_Init(void)
 {
- 
-   	EXTI_InitTypeDef EXTI_InitStructure;
- 	  NVIC_InitTypeDef NVIC_InitStructure;
-
- //按键初始化函数
+	//按键初始化函数
 		GPIO_InitTypeDef GPIO_InitStructure;
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOE,ENABLE);//使能PORTA,PORTE时钟  
-
-		GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_4|GPIO_Pin_3|GPIO_Pin_2;//KEY0-KEY1  PE3 PE2
+	  EXTI_InitTypeDef EXTI_InitStructure;
+	
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO,ENABLE);//使能PORTA 
+		GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_3;//PA.3 接触屏中断
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
 		GPIO_Init(GPIOE, &GPIO_InitStructure);//初始化GPIO
+	  
+	  //GPIOA.3	  中断线以及中断初始化配置 下降沿触发 //KEY1
+  	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource3);
+  	EXTI_InitStructure.EXTI_Line=EXTI_Line3;
+  	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
+  	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+  	EXTI_Init(&EXTI_InitStructure);	  	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
+	  
+	  EXTI_NVIC_Configuration();
+}
+/*void EXTIX_Init(void)
+{
+ 
+   	
+ 	  NVIC_InitTypeDef NVIC_InitStructure;
+
+    
 
 		//初始化 WK_UP-->GPIOA.0	  下拉输入  key up PA0
 		GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_0;
@@ -40,14 +45,9 @@ void EXTIX_Init(void)
 	
 
 	
-  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);	//使能复用功能时钟
+  	
 	
-   //GPIOE.3	  中断线以及中断初始化配置 下降沿触发 //KEY1
-  	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource3);
-  	EXTI_InitStructure.EXTI_Line=EXTI_Line3;
-  	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-  	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-  	EXTI_Init(&EXTI_InitStructure);	  	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
+   
 
    //GPIOE.2	  中断线以及中断初始化配置  下降沿触发	//KEY4
   	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource4);
@@ -94,7 +94,7 @@ void EXTIX_Init(void)
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
   	NVIC_Init(&NVIC_InitStructure);  	  //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
  
-}
+}*/
 
 
 

@@ -1,7 +1,7 @@
+#include "sys.h"
 #include "led.h"
 #include "delay.h"
 #include "key.h"
-#include "sys.h"
 #include "lcd.h"
 #include "usart.h"	 
 #include "adc.h"
@@ -30,9 +30,8 @@ u8 flagmod =0;
 u8 t = 1;
 u16 tempfeed ;
 u16 feedt ;
-extern uint8_t mode_step,stop_stage;
+extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step;
-extern uint16_t si[][256],sawtooth[][256],triangle[][256],rectangel[][256],ex[][256];
 char time_interval=4;
 char scr_state,wave_pattern,amplitude_level=1;
  int main(void)
@@ -41,31 +40,24 @@ char scr_state,wave_pattern,amplitude_level=1;
   u16 adcx; //adc变量
 	float temp;
 	double mod;
-	delay_init();	    	 //延时函数初始化	
-	
-	 
+	EXTIX_Init(); 	 //按键中断初始化
+	Adc_Init();		  	 	//ADC初始化Adc_Init();		  	 	//ADC初始化 
 	uart_init(115200);	 	//串口初始化为115200
- 	LED_Init();			     //LED端口初始化
-	//EXTIX_Init(); 	 //按键中断初始化
-	//Adc_Init();		  	 	//ADC初始化Adc_Init();		  	 	//ADC初始化 
-	LCD_Init();			 	   //LCD初始化
-	//TIM_Init(2048,2048);
-	Gui_StrCenter(0,64,GREEN,BLUE,"上海师范大学",32,1);//居中显示  
- 	
-	TP_Init();
+	printf("-----------------\n");
+  printf("PVDF压电薄膜\n");
+	printf("-----------------\n");
+	TIM_Init(2048,2048);
 	
+	LCD_Init();			 	   //LCD初始化
+	Gui_StrCenter(0,64,GREEN,BLUE,"上海师范大学",32,1);//居中显示  
+	TP_Init();
+	EXTIX_Init();
   //TIM3_Mode_config(390,71);	 
   //TIM3_PWM_Init(47999,99);	 //不分频。PWM频率=72000000/4800000=15hz   定时器3 PWM初始化
 	//TIM3_PWM_Init(47999,99);	 //不分频。PWM频率=72000000/4800000=15hz   定时器3 PWM初始化
 	//TIM_SetCompare2(TIM3,PWM);
 	//TIM4_Int_Init(99,7199);   //定时器4  控制电磁阀的开关时间 10ms
- 
 	
-  printf("-----------------\n");
-  printf("PVDF压电薄膜\n");
-	printf("-----------------\n");
-	
-
 	//显示提示信息
 	/*POINT_COLOR=BLUE;//设置字体为蓝色
 	//LCD_ShowString(60,130,200,16,16,"ADC_CH0_VAL:");	      //显示ADC值  
@@ -90,11 +82,7 @@ char scr_state,wave_pattern,amplitude_level=1;
 //		adcx=temp;
 //		mod = MOD_func((double)temp); //逆模型
 //		//LCD_ShowxNum(156,250, mod*10000, 3,16,0);
-//    if(PEN==0)
-//   {
-		TP_Read_XY2(&tp_dev.x,&tp_dev.y);
-	  printf("坐标x:%d,坐标y:%d\n",tp_dev.x,tp_dev.y);
-//		}			
+  		
 //		
 //		//LCD_ShowxNum(156,150,adcx,1,16,0);//显示电压值
 //		temp-=adcx;  //取出小数部分

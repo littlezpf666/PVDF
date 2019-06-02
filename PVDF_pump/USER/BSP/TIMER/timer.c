@@ -128,6 +128,7 @@ void TIM_Init(u16 crr2_val,u16 crr3_val)
 {
 	TIM3_GPIO_config();
 	TIM3_Mode_config(crr2_val,crr3_val);
+	TIM4_Mode_config(400,71);
 }
 void TIM3_GPIO_config()
 {
@@ -139,7 +140,7 @@ void TIM3_GPIO_config()
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
 	
-	//设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形	GPIOB.0
+	//设置该引脚为复用输出功能,输出TIM3 CH3的PWM脉冲波形	GPIOB.0
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -188,7 +189,6 @@ void TIM3_Mode_config(u16 crr2_val,u16 crr3_val)
 void TIM4_Mode_config(u16 arr,u16 psc)
 {
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); //时钟使能
 
@@ -200,9 +200,9 @@ void TIM4_Mode_config(u16 arr,u16 psc)
  
 
   	/*********************中断设置***************************/
-	TIM_ClearFlag(TIM3, TIM_FLAG_Update);
-  TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
-	TIM_Cmd(TIM7, DISABLE);
+	TIM_ClearFlag(TIM4, TIM_FLAG_Update);
+  TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE);
+	TIM_Cmd(TIM4, ENABLE);
 	TIM_NVIC_Configuration();
 						 
 }

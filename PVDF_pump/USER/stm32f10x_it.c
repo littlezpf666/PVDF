@@ -23,7 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h" 
-#include "time.h"
+
 
  
 void NMI_Handler(void)
@@ -86,40 +86,49 @@ void SysTick_Handler(void)
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
 /**
-  * @brief  This function handles BASIC_TIM6 interrupt request.
+  * @brief  This function handles GENERAL_TIM3 interrupt request.
   * @param  None
   * @retval None
   */
 uint16_t DDS_step=0,DDSM=1;
 extern uint16_t si[][256];
-uint8_t mode_step=0;
+uint8_t mode_status=0;
+uint8_t stop_status=0;
 void TIM3_IRQHandler(void)
 {
+	TIM_OCInitTypeDef  TIM_OCInitStructure;
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)!=RESET)
 	{
 		DDS_step=DDS_step+DDSM;
 		if(DDS_step>255)
 		 {
 			DDS_step=0;
-			if(mode_step==0)
-			mode_step++;
-			else if(mode_step==1)
-			mode_step=0;	
+			if(mode_status==0)
+			mode_status++;
+			else if(mode_status==1)
+			mode_status=0;	
 		 }
-		 //TIM_OCInitStructure.TIM_Pulse = si[0][DDS_step];
+		 if(stop_status==0)
+		 {
+			 TIM_SetCompare2(TIM3, si[4][DDS_step]);
+		 }
+     else
+		 {
+			 TIM_SetCompare2(TIM3, 0);
+		 }
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
 	}
 		
 }
 
 /**
-  * @brief  This function handles BASIC_TIM7 interrupt request.
+  * @brief  This function handles GENERAL_TIM4 interrupt request.
   * @param  None
   * @retval None
   */
 unsigned int tim4_counter1=0,tim4_counter2=0;
 extern char time_interval;//引用变量要与源变量声明的类型相同
-uint8_t stop_stage=0;
+
 void TIM4_IRQHandler(void)
 {
 	if(TIM_GetITStatus(TIM4,TIM_IT_Update)!=RESET)
@@ -133,14 +142,26 @@ void TIM4_IRQHandler(void)
 		}
 		if(tim4_counter2==time_interval)
 			{
-				stop_stage=0;
+				stop_status=0;
 			}
 			if(tim4_counter2==time_interval*2)
 			{
-				stop_stage=1;
+				stop_status=1;
 			  tim4_counter2=0;
 			}	
 		TIM_ClearITPendingBit(TIM4,TIM_IT_Update);
 	}
 		
+}
+void EXTI3_IRQHandler(void)
+{
+	if (EXTI_GetITStatus(EXTI_Line3) != RESET){
+		  delay_ms(10);
+		  if(PEN==0)
+			{
+		  TP_Read_XY2(&tp_dev.x,&tp_dev.y);
+	    printf("坐标x:%d,坐标y:%d\n",tp_dev.x,tp_dev.y);
+			}
+      EXTI_ClearITPendingBit(EXTI_Line3);     
+	  }
 }

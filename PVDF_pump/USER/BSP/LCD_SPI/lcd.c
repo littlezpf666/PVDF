@@ -327,7 +327,7 @@ void LCD_RESET(void)
 //******************************************************************
 void LCD_Init(void)
 {  
-     										 
+  delay_init();	    	 //延时函数初始化	   										 
 #if USE_HARDWARE_SPI //使用硬件SPI
 	SPI2_Init();
 #else	

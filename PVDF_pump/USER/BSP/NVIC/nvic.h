@@ -3,7 +3,7 @@
 
 #include "stm32f10x.h"
 
-void NVIC_Configuration(void);
+void EXTI_NVIC_Configuration(void);
 void TIM_NVIC_Configuration(void);
 void USART_NVIC_Configuration(void);
 #endif
