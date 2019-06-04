@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;.\BSP\ADC;.\BSP\KEY;.\BSP\MOD;.\BSP\PID;.\BSP\LED;.\BSP\TIMER;..\SYSTEM\sys;..\SYSTEM\delay;..\SYSTEM\usart;..\CORE;..\STM32F10x_FWLib\inc;.\BSP\LCD_SPI;.\BSP\TOUCH;.\BSP\IIC;.\BSP\24CXX;.\BSP\DAC;.\BSP\NVIC</IncludePath>
+              <IncludePath>..\USER;.\BSP\ADC;.\BSP\KEY;.\BSP\MOD;.\BSP\PID;.\BSP\LED;.\BSP\TIMER;..\SYSTEM\sys;..\SYSTEM\delay;..\SYSTEM\usart;..\CORE;..\STM32F10x_FWLib\inc;.\BSP\LCD_SPI;.\BSP\TOUCH;.\BSP\IIC;.\BSP\24CXX;.\BSP\DAC;.\BSP\NVIC;.\BSP\DMA</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -490,6 +490,11 @@
               <FileName>adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\BSP\ADC\adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BSP\DMA\dma.c</FilePath>
             </File>
           </Files>
         </Group>

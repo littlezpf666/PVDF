@@ -86,6 +86,29 @@ void SysTick_Handler(void)
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
 /**
+  * @brief  This function handles ADC DMA interrupt request.
+  * @param  None
+  * @retval None
+  */
+extern uint16_t ADC_ConvertedValue[2];
+//extern uint16_t flag1,flag2,flag3;
+//volatile uint16_t Preiod_value=1;
+void DMA1_Channel1_IRQHandler(void)
+{                                  
+//	static uint8_t div_count=0;
+	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
+	{ 
+		
+//	  Data_Send_Senser(ADC_ConvertedValue,flag1,flag2,flag3);//??????
+//		if(++div_count==150)
+//		{
+//			Preiod_value=preiod(2600,ADC_ConvertedValue);
+//		  div_count=0;
+//		}
+		DMA_ClearFlag(DMA1_FLAG_GL1);
+	}		    
+}
+/**
   * @brief  This function handles GENERAL_TIM3 interrupt request.
   * @param  None
   * @retval None

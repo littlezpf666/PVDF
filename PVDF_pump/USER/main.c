@@ -3,12 +3,15 @@
 #include "delay.h"
 #include "key.h"
 #include "lcd.h"
-#include "usart.h"	 
+#include "GUI.h"
+#include "usart.h"
+#include "dma.h"
 #include "adc.h"
 #include "timer.h"
 #include "pid.h"
 #include "mod.h"
 #include "touch.h"
+#include "pic.h"
 /*一个源文件调用另一个源文件的函数只需要声明一下另一文件中的函数名就可以了，
 与原函数同名的.h文件的作用：
 对调用的文件来说起作用的是.h中的函数声明，有了这个声明就可以调用对应源函数中的函数
@@ -30,6 +33,7 @@ u8 flagmod =0;
 u8 t = 1;
 u16 tempfeed ;
 u16 feedt ;
+extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step;
 char time_interval=4;
@@ -39,24 +43,28 @@ char scr_state,wave_pattern,amplitude_level=1;
   char tp_x;
   u16 adcx; //adc变量
 	float temp;
-	double mod;
-	EXTIX_Init(); 	 //按键中断初始化
-	Adc_Init();		  	 	//ADC初始化Adc_Init();		  	 	//ADC初始化 
+	double mod;	
+/********************usart_init**************************/	 
 	uart_init(115200);	 	//串口初始化为115200
+	printf("\r-----------------");
+  printf("PVDF压电薄膜");
 	printf("-----------------\n");
-  printf("PVDF压电薄膜\n");
-	printf("-----------------\n");
+	 
+/********************TIM3/4_init**************************/
 	TIM_Init(2048,2048);
-	
-	LCD_Init();			 	   //LCD初始化
-	Gui_StrCenter(0,64,GREEN,BLUE,"上海师范大学",32,1);//居中显示  
+	 
+/********************LCD/touch_init***********************/
+	LCD_Init();			 	   
+	Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
+  BACK_COLOR=WHITE;	 
+  LCD_ShowNum(130,170,666,3,16);
+	Gui_Drawbmp16(0,0,gImage_qq);
 	TP_Init();
-	EXTIX_Init();
-  //TIM3_Mode_config(390,71);	 
-  //TIM3_PWM_Init(47999,99);	 //不分频。PWM频率=72000000/4800000=15hz   定时器3 PWM初始化
-	//TIM3_PWM_Init(47999,99);	 //不分频。PWM频率=72000000/4800000=15hz   定时器3 PWM初始化
-	//TIM_SetCompare2(TIM3,PWM);
-	//TIM4_Int_Init(99,7199);   //定时器4  控制电磁阀的开关时间 10ms
+	EXTIX_Init(); 	 //按键中断初始化
+	 
+/********************DMA/ADC_init***********************/
+	DMA_Config(); 
+	Adc_Init();	//ADC初始化Adc_Init();		  	 	
 	
 	//显示提示信息
 	/*POINT_COLOR=BLUE;//设置字体为蓝色
@@ -73,9 +81,8 @@ char scr_state,wave_pattern,amplitude_level=1;
 	
   while(1)   
 	{
-	  //printf("DDS_step:%d\n",DDS_step);
-		//adcx=Get_Adc_Average(ADC_Channel_1,10);  //采集ADC数据
-		//printf("adc:%d",adcx);
+		printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
+
 //		//LCD_ShowxNum(156,130,adcx,4,16,0);//显示ADC的值
 //		tempfeed = adcx;
 //		temp=(float)adcx*(3.3/4096);  //归一化

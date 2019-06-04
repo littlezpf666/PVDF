@@ -18,7 +18,7 @@ void EXTIX_Init(void)
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO,ENABLE);//使能PORTA 
 		GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_3;//PA.3 接触屏中断
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
-		GPIO_Init(GPIOE, &GPIO_InitStructure);//初始化GPIO
+		GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO
 	  
 	  //GPIOA.3	  中断线以及中断初始化配置 下降沿触发 //KEY1
   	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource3);
