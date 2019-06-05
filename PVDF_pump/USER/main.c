@@ -33,11 +33,12 @@ u8 flagmod =0;
 u8 t = 1;
 u16 tempfeed ;
 u16 feedt ;
+extern char DETECT_KEY;
 extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step;
 char time_interval=4;
-char scr_state,wave_pattern,amplitude_level=1;
+char scr_state=0,wave_pattern=0,amplitude_level=1;
  int main(void)
  {	
   char tp_x;
@@ -57,8 +58,7 @@ char scr_state,wave_pattern,amplitude_level=1;
 	LCD_Init();			 	   
 	Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
   BACK_COLOR=WHITE;	 
-  LCD_ShowNum(130,170,666,3,16);
-	Gui_Drawbmp16(0,0,gImage_qq);
+	Gui_Drawbmp16(10,55,gImage_shool);
 	TP_Init();
 	EXTIX_Init(); 	 //按键中断初始化
 	 
@@ -81,8 +81,25 @@ char scr_state,wave_pattern,amplitude_level=1;
 	
   while(1)   
 	{
-		printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
-
+		if(DETECT_KEY==1)
+		{
+			if(scr_state==0)
+			{
+				printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
+				
+	      printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
+				scr_state=1;
+				LCD_Clear(WHITE);
+				DETECT_KEY=0;
+			}
+			if(scr_state==1)
+			{
+				printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
+				LCD_ShowNum(130,170,amplitude_level,1,16);
+				DETECT_KEY=0;
+			}
+		}
+		
 //		//LCD_ShowxNum(156,130,adcx,4,16,0);//显示ADC的值
 //		tempfeed = adcx;
 //		temp=(float)adcx*(3.3/4096);  //归一化

@@ -176,14 +176,15 @@ void TIM4_IRQHandler(void)
 	}
 		
 }
+char DETECT_KEY=0;
 void EXTI3_IRQHandler(void)
 {
 	if (EXTI_GetITStatus(EXTI_Line3) != RESET){
 		  delay_ms(10);
 		  if(PEN==0)
 			{
-		  TP_Read_XY2(&tp_dev.x,&tp_dev.y);
-	    printf("×ø±êx:%d,×ø±êy:%d\n",tp_dev.x,tp_dev.y);
+			 DETECT_KEY=1;
+		   TP_Read_XY2(&tp_dev.x,&tp_dev.y);
 			}
       EXTI_ClearITPendingBit(EXTI_Line3);     
 	  }
