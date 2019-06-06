@@ -36,9 +36,10 @@ u16 feedt ;
 extern char DETECT_KEY;
 extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
-extern uint16_t DDS_step;
+extern uint16_t DDS_step,DDSM;
 char time_interval=4;
-char scr_state=0,wave_pattern=0,amplitude_level=1;
+char sel_state=0,scr_state=0,wave_pattern=0,amplitude_level=0;
+char count_press;
  int main(void)
  {	
   char tp_x;
@@ -57,15 +58,19 @@ char scr_state=0,wave_pattern=0,amplitude_level=1;
 /********************LCD/touch_init***********************/
 	LCD_Init();			 	   
 	Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
-  BACK_COLOR=WHITE;	 
+  	 
 	Gui_Drawbmp16(10,55,gImage_shool);
 	TP_Init();
 	EXTIX_Init(); 	 //按键中断初始化
-	 
+	tp_dev.xfac=(float)(lcddev.width-40)/(400-3800);//得到xfac		 
+	tp_dev.xoff=(lcddev.width-tp_dev.xfac*(3800+387))/2;//得到xoff
+						  
+	tp_dev.yfac=(float)(lcddev.height-40)/(294-3783);//得到yfac
+	tp_dev.yoff=(lcddev.height-tp_dev.yfac*(3785+294))/2;//得到yoff 
 /********************DMA/ADC_init***********************/
 	DMA_Config(); 
 	Adc_Init();	//ADC初始化Adc_Init();		  	 	
-	
+	 
 	//显示提示信息
 	/*POINT_COLOR=BLUE;//设置字体为蓝色
 	//LCD_ShowString(60,130,200,16,16,"ADC_CH0_VAL:");	      //显示ADC值  
@@ -90,12 +95,82 @@ char scr_state=0,wave_pattern=0,amplitude_level=1;
 	      printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
 				scr_state=1;
 				LCD_Clear(WHITE);
+				Gui_Drawbmp16(20,160,gImage_arrow_up);
+				Gui_Drawbmp16(100,160,gImage_arrow_down);
+				Gui_Drawbmp16(180,160,gImage_switch);
+				Gui_Drawbmp16(260,160,gImage_mode);
+				POINT_COLOR=RED;
+				LCD_ShowString(40,30,16,"stre",1);
+				POINT_COLOR=GREEN;
+				LCD_ShowString(100,30,16,"freq",1);
 				DETECT_KEY=0;
 			}
 			if(scr_state==1)
 			{
 				printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
-				LCD_ShowNum(130,170,amplitude_level,1,16);
+				
+				if(tp_dev.x>20&&tp_dev.x<60&&tp_dev.y>160&&tp_dev.y<200)
+				{
+					if(sel_state==0)
+					{
+							if(++amplitude_level>5)
+						{
+							amplitude_level=5;	
+						}
+					}
+					else
+					{
+						if(DDSM<4)
+						 {
+						   DDSM++;
+						 }
+					}
+				}
+				if(tp_dev.x>100&&tp_dev.x<140&&tp_dev.y>160&&tp_dev.y<200)
+				{
+					if(sel_state==0)
+					{
+						if(amplitude_level>0)
+						{
+							--amplitude_level;	
+						}
+				 }
+					else
+					{
+						if(DDSM>1)
+						 {
+						  DDSM--;
+						 }
+					}
+				}
+				if(tp_dev.x>180&&tp_dev.x<220&&tp_dev.y>160&&tp_dev.y<200)
+				{
+					if(sel_state==1){
+						POINT_COLOR=RED;
+						LCD_ShowString(40,30,16,"stre",1);
+						POINT_COLOR=GREEN;
+					  LCD_ShowString(100,30,16,"freq",1);
+						sel_state=0;
+					}
+					else {
+						POINT_COLOR=RED;
+					  LCD_ShowString(100,30,16,"freq",1);
+						POINT_COLOR=GREEN;
+						LCD_ShowString(40,30,16,"stre",1);
+						sel_state=0;
+					sel_state++;}
+				}
+        if(tp_dev.x>260&&tp_dev.x<300&&tp_dev.y>160&&tp_dev.y<180)
+				{
+					
+					if(wave_pattern>0)
+					{
+						if(wave_pattern==4)wave_pattern=0;
+					  else wave_pattern++;	
+					}
+				}				
+				LCD_ShowNum(40,50,amplitude_level+1,1,16);
+				LCD_ShowNum(100,50,DDSM,1,16);
 				DETECT_KEY=0;
 			}
 		}

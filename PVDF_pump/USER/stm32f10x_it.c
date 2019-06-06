@@ -115,6 +115,7 @@ void DMA1_Channel1_IRQHandler(void)
   */
 uint16_t DDS_step=0,DDSM=1;
 extern uint16_t si[][256];
+extern char amplitude_level;
 uint8_t mode_status=0;
 uint8_t stop_status=0;
 void TIM3_IRQHandler(void)
@@ -133,7 +134,7 @@ void TIM3_IRQHandler(void)
 		 }
 		 if(stop_status==0)
 		 {
-			 TIM_SetCompare2(TIM3, si[4][DDS_step]);
+			 TIM_SetCompare2(TIM3, si[amplitude_level][DDS_step]);
 		 }
      else
 		 {
@@ -184,7 +185,9 @@ void EXTI3_IRQHandler(void)
 		  if(PEN==0)
 			{
 			 DETECT_KEY=1;
-		   TP_Read_XY2(&tp_dev.x,&tp_dev.y);
+		   TP_Read_XY2(&tp_dev.y,&tp_dev.x);
+			 tp_dev.x=tp_dev.xfac*tp_dev.x+tp_dev.xoff;//将结果转换为屏幕坐标
+			 tp_dev.y=tp_dev.yfac*tp_dev.y+tp_dev.yoff;
 			}
       EXTI_ClearITPendingBit(EXTI_Line3);     
 	  }
