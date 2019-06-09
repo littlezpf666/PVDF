@@ -28,6 +28,9 @@
 #include "usart.h"
 #include "touch.h"
 #include "delay.h"
+#include "led.h"
+#include "gui.h"
+#include "lcd.h"
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/

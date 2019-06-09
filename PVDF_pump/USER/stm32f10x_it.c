@@ -91,6 +91,7 @@ void SysTick_Handler(void)
   * @retval None
   */
 extern uint16_t ADC_ConvertedValue[2];
+u16 vol_per;
 //extern uint16_t flag1,flag2,flag3;
 //volatile uint16_t Preiod_value=1;
 void DMA1_Channel1_IRQHandler(void)
@@ -98,7 +99,7 @@ void DMA1_Channel1_IRQHandler(void)
 //	static uint8_t div_count=0;
 	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
 	{ 
-		
+		vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化		
 //	  Data_Send_Senser(ADC_ConvertedValue,flag1,flag2,flag3);//??????
 //		if(++div_count==150)
 //		{
@@ -114,8 +115,9 @@ void DMA1_Channel1_IRQHandler(void)
   * @retval None
   */
 uint16_t DDS_step=0,DDSM=1;
-extern uint16_t si[][256];
-extern char amplitude_level;
+uint16_t temp[1][256];
+extern uint16_t si[][256],sawtooth[][256],triangle[][256],ex[][256];
+extern char amplitude_level,wave_pattern;
 uint8_t mode_status=0;
 uint8_t stop_status=0;
 void TIM3_IRQHandler(void)
@@ -132,13 +134,31 @@ void TIM3_IRQHandler(void)
 			else if(mode_status==1)
 			mode_status=0;	
 		 }
-		 if(stop_status==0)
+		 if(stop_status==0)//在吸气阶段电机不断改变占空比
 		 {
-			 TIM_SetCompare2(TIM3, si[amplitude_level][DDS_step]);
+			 switch (wave_pattern)
+			 {
+				  case 0:
+						temp[amplitude_level][DDS_step]=si[amplitude_level][DDS_step];
+			     break;
+			    case 1:
+						temp[amplitude_level][DDS_step]=sawtooth[amplitude_level][DDS_step];
+			     break;
+				  case 3:
+						temp[amplitude_level][DDS_step]=triangle[amplitude_level][DDS_step];
+			     break;
+					case 4:
+						temp[amplitude_level][DDS_step]=ex[amplitude_level][DDS_step];
+					 break;
+			 }
+				
+			 TIM_SetCompare2(TIM3, temp[amplitude_level][DDS_step]);
+			 GAS=0;
 		 }
-     else
+     else//放气阶段停止占空比为0，气阀放气
 		 {
 			 TIM_SetCompare2(TIM3, 0);
+			 GAS=1;
 		 }
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
 	}
@@ -172,6 +192,8 @@ void TIM4_IRQHandler(void)
 			{
 				stop_status=1;
 			  tim4_counter2=0;
+				
+	      
 			}	
 		TIM_ClearITPendingBit(TIM4,TIM_IT_Update);
 	}

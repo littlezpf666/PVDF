@@ -7,6 +7,7 @@
 #include "usart.h"
 #include "dma.h"
 #include "adc.h"
+#include "string.h"
 #include "timer.h"
 #include "pid.h"
 #include "mod.h"
@@ -33,33 +34,78 @@ u8 flagmod =0;
 u8 t = 1;
 u16 tempfeed ;
 u16 feedt ;
+/******************************/
+
+char *comm1="add|sub", *comm2="switch",*comm3="mode";
+int ptr;
+/******************************/  
 extern char DETECT_KEY;
 extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step,DDSM;
-char time_interval=4;
+char time_interval=2;
 char sel_state=0,scr_state=0,wave_pattern=0,amplitude_level=0;
 char count_press;
+extern u16 vol_per;
+
+int Test(void)
+{
+	char command[] = "add|sub#11*switch#22*mode#33*mo12345de#33ascas";
+	//char *s[4]={0};
+	char *s[5];
+	char *p,*p1;
+	int num_command=0;
+	int elenmentSize=0;
+	int i=0; 
+	
+	//double *temp =(double*)malloc(30*sizeof(double)); //分配空间
+	p = strtok(command, "*");
+	while(p)
+	{
+		s[num_command++]=p;
+		printf("%s\r\n",s[num_command-1]);
+		p= strtok(NULL,"*");
+	}
+	//sizeof(s)//获取的是数组s总的字节数
+	//数组s总的字节数初除以每一个元素的尺寸就是数组的个数
+	printf("S长度:%d\r\n",sizeof(s));
+	printf("S[0]长度:%d\r\n",strlen(s[0]));
+	while(i<num_command)
+	{
+		p1=strtok(s[i],"#");
+		printf("%s\r\n",p1);
+		p1=strtok(NULL,"#");
+		printf("%s\r\n",p1);
+		i++;
+	}
+	
+	ptr=strcmp(s[0],s[1]);
+	printf("是否一致：%d",ptr);	
+	return 0;
+}
+
  int main(void)
  {	
   char tp_x;
   u16 adcx; //adc变量
-	float temp;
-	double mod;	
+	
+	double mod;
+  
 /********************usart_init**************************/	 
 	uart_init(115200);	 	//串口初始化为115200
-	printf("\r-----------------");
+	printf("\r\n-----------------");
   printf("PVDF压电薄膜");
-	printf("-----------------\n");
+	printf("-----------------\r\n");
 	 
 /********************TIM3/4_init**************************/
-	TIM_Init(2048,2048);
-	 
+	TIM_Init(2048,0); 
+	GAS_VALVE_Init(); 
 /********************LCD/touch_init***********************/
 	LCD_Init();			 	   
 	Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
   	 
 	Gui_Drawbmp16(10,55,gImage_shool);
+	
 	TP_Init();
 	EXTIX_Init(); 	 //按键中断初始化
 	tp_dev.xfac=(float)(lcddev.width-40)/(400-3800);//得到xfac		 
@@ -69,29 +115,19 @@ char count_press;
 	tp_dev.yoff=(lcddev.height-tp_dev.yfac*(3785+294))/2;//得到yoff 
 /********************DMA/ADC_init***********************/
 	DMA_Config(); 
-	Adc_Init();	//ADC初始化Adc_Init();		  	 	
-	 
-	//显示提示信息
-	/*POINT_COLOR=BLUE;//设置字体为蓝色
-	//LCD_ShowString(60,130,200,16,16,"ADC_CH0_VAL:");	      //显示ADC值  
-	//LCD_ShowString(60,150,200,16,16,"ADC_CH0_VOL:0.000V");	//显示电压值
-	LCD_ShowString(60,170,200,16,16,"PWM:");	//显PWM频率
-	LCD_ShowString(155,170,200,16,16,"%");
-	LCD_ShowString(60,190,200,16,16,"level:");	//显PWM频率
-	LCD_ShowString(60,210,200,16,16,"mode");
-	LCD_ShowString(110,210,200,16,16,"prolactin");
-	LCD_ShowString(60,230,200,16,16,"stop");
-	//LCD_ShowString(60,250,200,16,16,"mod");	
-	LCD_ShowxNum(130,170,0,3,16,0);*/
+	Adc_Init();	//ADC初始化Adc_Init();
+		
+	Test();
 	
   while(1)   
 	{
+		
 		if(DETECT_KEY==1)
 		{
 			if(scr_state==0)
 			{
-				printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
 				
+				//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],vol_per);
 	      printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
 				scr_state=1;
 				LCD_Clear(WHITE);
@@ -103,10 +139,12 @@ char count_press;
 				LCD_ShowString(40,30,16,"stre",1);
 				POINT_COLOR=GREEN;
 				LCD_ShowString(100,30,16,"freq",1);
+				LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
 				DETECT_KEY=0;
 			}
 			if(scr_state==1)
 			{
+				LCD_ShowNum(270,0,vol_per,3,16);//显示ADC的值
 				printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
 				
 				if(tp_dev.x>20&&tp_dev.x<60&&tp_dev.y>160&&tp_dev.y<200)
@@ -161,21 +199,19 @@ char count_press;
 					sel_state++;}
 				}
         if(tp_dev.x>260&&tp_dev.x<300&&tp_dev.y>160&&tp_dev.y<180)
-				{
-					
-					if(wave_pattern>0)
-					{
+				{	
 						if(wave_pattern==4)wave_pattern=0;
-					  else wave_pattern++;	
-					}
+					  else wave_pattern++;		
 				}				
 				LCD_ShowNum(40,50,amplitude_level+1,1,16);
 				LCD_ShowNum(100,50,DDSM,1,16);
+				LCD_ShowNum(160,50,wave_pattern,1,16);
 				DETECT_KEY=0;
 			}
 		}
-		
-//		//LCD_ShowxNum(156,130,adcx,4,16,0);//显示ADC的值
+	 
+	 	
+   
 //		tempfeed = adcx;
 //		temp=(float)adcx*(3.3/4096);  //归一化
 //		adcx=temp;

@@ -4,11 +4,11 @@
 //////////////////////////////////////////////////////////////////////////////////	 
 						  
 ////////////////////////////////////////////////////////////////////////////////// 
-#define LED0 PBout(5)// PB5
-#define LED1 PEout(5)// PE5	
-#define ELE PAout(6)// PA6	
+/*#define LED0 PBout(5)// PB5
+#define LED1 PEout(5)// PE5*/	
+#define GAS PBout(1)// PB6	
 
-void LED_Init(void);//初始化
+void GAS_VALVE_Init(void);//初始化
 
 		 				    
 #endif
