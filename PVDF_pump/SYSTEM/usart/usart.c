@@ -1,5 +1,6 @@
 #include "sys.h"
-#include "usart.h"	  
+#include "usart.h"
+#include "string.h"
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -57,7 +58,38 @@ int fputc(int ch, FILE *f)
 	return ch;
 }
 #endif 
+char string_process(char command[])
+{
+	//char command[] = "add|sub#11*switch#22*mode#33*mo12345de#33ascas";
+	char *comm1="add|sub", *comm2="switch",*comm3="mode";
+	char *s[5];//用存储分割之后字符串的数组
+	char *p,*p1;
+	char num_command=0;
+	int i=0,ptr; 
 
+	p = strtok(command, "*");
+	while(p)
+	{
+		s[num_command++]=p;
+		printf("%s\r\n",s[num_command-1]);
+		p= strtok(NULL,"*");
+	}
+	//sizeof(s)//获取的是数组s总的字节数
+	//数组s总的字节数初除以每一个元素的尺寸就是数组的个数sizeof(s)/sizeof(s[0])
+	printf("指令个数:%d\r\n",num_command);
+	while(i<num_command)
+	{
+		p1=strtok(s[i],"#");
+		printf("%s\r\n",p1);
+		p1=strtok(NULL,"#");
+		printf("%s\r\n",p1);
+		i++;
+	}
+	
+	//ptr=strcmp(s[0],s[1]);
+	//printf("是否一致：%d",ptr);	
+	return 0;
+}
 /*使用microLib的方法*/
  /* 
 int fputc(int ch, FILE *f)
@@ -84,8 +116,8 @@ u8 USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 //bit15，	接收完成标志
 //bit14，	接收到0x0d
 //bit13~0，	接收到的有效字节数目
-u16 USART_RX_STA=0;       //接收状态标记	  
-  
+u16 USART_RX_STA=0xf000;       //接收状态标记	  
+u8 DETECT_USART_COMM=0;  
 void uart_init(u32 bound){
   //GPIO端口设置
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -126,23 +158,84 @@ void uart_init(u32 bound){
   USART_Cmd(USART1, ENABLE);                    //使能串口1 
 
 }
-
+u16 string_num;
+u8 rx_status=0;
+extern char uart_comm[4];
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 	{
-	u8 Res;
+	u8 i,Res;
 #if SYSTEM_SUPPORT_OS 		//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
 	OSIntEnter();    
 #endif
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		{
 		Res =USART_ReceiveData(USART1);	//读取接收到的数据
-		printf("%c",Res);
-		if((USART_RX_STA&0x8000)==0)//接收未完成
+			switch (rx_status)
 			{
-			if(USART_RX_STA&0x4000)//接收到了0x0d
+				case 0:
+					if(Res=='z')
+						rx_status=1;
+					else
+						rx_status=0;
+					break;
+				case 1:
+					if(Res=='p')
+						rx_status=2;
+					else
+						rx_status=0;
+					break;
+				case 2:
+					if(Res=='f')
+						rx_status=3;
+					else
+						rx_status=0;
+					break;
+				case 3:
+					if(Res==0x0d)
+						rx_status=4;
+					else
+					{
+						USART_RX_BUF[string_num]=Res ;
+						string_num++;
+						if(string_num>(USART_REC_LEN-1))
+						{ 
+							memset(USART_RX_BUF,0,string_num);
+							string_num=0;
+							rx_status=0;
+						}//接收数据错误,重新开始接收	  
+					}		 
+					break;
+        case 4:
+					if(Res==0x0a)
+					{
+						 for(i=0;i<string_num;i++)
+						 {
+							 printf("%c",USART_RX_BUF[i]);
+							 
+						 }
+						 printf("\r\n");
+						 //string_process(USART_RX_BUF);
+						 strncpy(uart_comm,USART_RX_BUF,4);
+						 printf("%s\r\n",uart_comm);
+						 DETECT_USART_COMM=1;
+					 }
+					 memset(USART_RX_BUF,0,string_num);
+					 string_num=0;
+					 rx_status=0;
+					break;					
+			}
+				
+		/*if((USART_RX_STA&0x8000)==0)//接收未完成
+			{
+			if(USART_RX_STA&0x4000)//接收到了0x0d即空格
 				{
 				if(Res!=0x0a)USART_RX_STA=0;//接收错误,重新开始
-				else USART_RX_STA|=0x8000;	//接收完成了 
+				else{                       //接收到空格后，接收到了回车
+											 
+				   USART_RX_STA|=0x8000;	//接收完成了
+					 printf("%x",USART_RX_STA);
+					} 
+				 
 				}
 			else //还没收到0X0D
 				{	
@@ -154,11 +247,62 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
 					}		 
 				}
-			}   		 
+			} 
+			else if((USART_RX_STA&0x8000)==0x8000)
+				{				
+					USART_RX_STA=0;
+				  if(Res==0x0d)USART_RX_STA|=0x4000;
+				else
+					{
+					USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
+					USART_RX_STA++;
+					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
+					}		 
+			 }*/
      } 
 #if SYSTEM_SUPPORT_OS 	//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
 	OSIntExit();  											 
 #endif
 } 
 #endif	
+/*********************??????******************************/
+void Usart2_Put_Buf(u8 a[],u8 _cnt) 
+{
+  u8 i;
+  for(i=0;i<_cnt;i++) 
+	{
+	USART_SendData(USART1,a[i]);
+	while (USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);	
+  }
+}
 
+/*********************?????????*************************/
+void Data_Send_Senser(u16 a,u16 b,u16 c,u16 d)
+{
+	u8  _cnt=0,i,sum=0;
+  u8 		data_to_send[30];
+	data_to_send[_cnt++]=0xAA;//???
+	data_to_send[_cnt++]=0xAA;
+	data_to_send[_cnt++]=0x02;
+	data_to_send[_cnt++]=0;
+	
+	data_to_send[_cnt++]=a/256;  //16?? ??Y?3????? ???????
+	data_to_send[_cnt++]=a%256;  //??????
+	
+	data_to_send[_cnt++]=b/256;  //??2
+	data_to_send[_cnt++]=b%256;
+	
+	data_to_send[_cnt++]=c/256;  // ??3
+	data_to_send[_cnt++]=c%256;
+	
+	data_to_send[_cnt++]=d/256;
+	data_to_send[_cnt++]=d%256;
+		
+	data_to_send[3] = _cnt-4;
+	
+	for( i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	data_to_send[_cnt++] = sum;
+
+	Usart2_Put_Buf(data_to_send,_cnt);
+}

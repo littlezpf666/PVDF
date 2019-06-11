@@ -26,62 +26,121 @@
 /************************************************
  PVDF_pump
 ************************************************/
-u16 PWM=0;  //PWM变量
-u8 num = 0;
-u8 flagE = 0;
-u8 flagup = 0;
-u8 flagmod =0;
-u8 t = 1;
-u16 tempfeed ;
-u16 feedt ;
+//u16 PWM=0;  //PWM变量
+//u8 num = 0;
+//u8 flagE = 0;
+//u8 flagup = 0;
+//u8 flagmod =0;
+//u8 t = 1;
+//u16 tempfeed ;
+//u16 feedt ;
 /******************************/
 
-char *comm1="add|sub", *comm2="switch",*comm3="mode";
-int ptr;
+
 /******************************/  
-extern char DETECT_KEY;
+extern char DETECT_KEY,DETECT_USART_COMM;
 extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step,DDSM;
-char time_interval=2;
+extern u16 vol_per;
+extern u32 temp_val;
+char time_interval=3;
 char sel_state=0,scr_state=0,wave_pattern=0,amplitude_level=0;
 char count_press;
-extern u16 vol_per;
+char uart_comm[4];
 
-int Test(void)
+char touch_process(void)
 {
-	char command[] = "add|sub#11*switch#22*mode#33*mo12345de#33ascas";
-	//char *s[4]={0};
-	char *s[5];
-	char *p,*p1;
-	int num_command=0;
-	int elenmentSize=0;
-	int i=0; 
-	
-	//double *temp =(double*)malloc(30*sizeof(double)); //分配空间
-	p = strtok(command, "*");
-	while(p)
-	{
-		s[num_command++]=p;
-		printf("%s\r\n",s[num_command-1]);
-		p= strtok(NULL,"*");
-	}
-	//sizeof(s)//获取的是数组s总的字节数
-	//数组s总的字节数初除以每一个元素的尺寸就是数组的个数
-	printf("S长度:%d\r\n",sizeof(s));
-	printf("S[0]长度:%d\r\n",strlen(s[0]));
-	while(i<num_command)
-	{
-		p1=strtok(s[i],"#");
-		printf("%s\r\n",p1);
-		p1=strtok(NULL,"#");
-		printf("%s\r\n",p1);
-		i++;
-	}
-	
-	ptr=strcmp(s[0],s[1]);
-	printf("是否一致：%d",ptr);	
-	return 0;
+		if(DETECT_KEY==1||DETECT_USART_COMM==1)
+		{
+			if(scr_state==0)
+			{
+	      printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
+				scr_state=1;
+				LCD_Clear(WHITE);
+				Gui_Drawbmp16(20,160,gImage_arrow_up);
+				Gui_Drawbmp16(100,160,gImage_arrow_down);
+				Gui_Drawbmp16(180,160,gImage_switch);
+				Gui_Drawbmp16(260,160,gImage_mode);
+				POINT_COLOR=RED;
+				LCD_ShowString(40,30,16,"stre",1);
+				POINT_COLOR=GREEN;
+				LCD_ShowString(100,30,16,"freq",1);
+				LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
+				DETECT_KEY=0;
+			}
+			if(scr_state==1)
+			{
+				if((tp_dev.x>20&&tp_dev.x<60&&tp_dev.y>160&&tp_dev.y<200)||uart_comm[0]=='1')
+				{
+					if(sel_state==0)
+					{
+//							if(++amplitude_level>5)
+//						{
+//							amplitude_level=5;	
+//						}
+						if(amplitude_level<5)
+						 {
+						   amplitude_level++;
+						 }
+					}
+					else
+					{
+						if(DDSM<4)
+						 {
+						   DDSM++;
+						 }
+					}
+				}
+				if((tp_dev.x>100&&tp_dev.x<140&&tp_dev.y>160&&tp_dev.y<200)||uart_comm[1]=='1')
+				{
+					if(sel_state==0)
+					{
+						if(amplitude_level>0)
+						{
+							--amplitude_level;	
+						}
+				  }
+					else
+					{
+						if(DDSM>1)
+						 {
+						  DDSM--;
+						 }
+					}
+				}
+				if((tp_dev.x>180&&tp_dev.x<220&&tp_dev.y>160&&tp_dev.y<200)||uart_comm[2]=='1')
+				{
+					if(sel_state==1){
+						POINT_COLOR=RED;
+						LCD_ShowString(40,30,16,"stre",1);
+						POINT_COLOR=GREEN;
+					  LCD_ShowString(100,30,16,"freq",1);
+						sel_state=0;
+					}
+					else {
+						POINT_COLOR=RED;
+					  LCD_ShowString(100,30,16,"freq",1);
+						POINT_COLOR=GREEN;
+						LCD_ShowString(40,30,16,"stre",1);
+						sel_state=0;
+					sel_state++;}
+				}
+        if(tp_dev.x>260&&tp_dev.x<300&&tp_dev.y>160&&tp_dev.y<180)
+				{	
+						if(wave_pattern==4)wave_pattern=0;
+					  else wave_pattern++;		
+				}
+        if(DETECT_USART_COMM==1)				
+        wave_pattern=uart_comm[3]-48;				
+				LCD_ShowNum(40,50,amplitude_level+1,1,16);
+				LCD_ShowNum(100,50,DDSM,1,16);
+				LCD_ShowNum(160,50,wave_pattern,1,16);
+				DETECT_KEY=0;
+				DETECT_USART_COMM=0;
+			}
+		}
+		return 0;
 }
 
  int main(void)
@@ -116,102 +175,13 @@ int Test(void)
 /********************DMA/ADC_init***********************/
 	DMA_Config(); 
 	Adc_Init();	//ADC初始化Adc_Init();
-		
-	Test();
-	
+
   while(1)   
 	{
-		
-		if(DETECT_KEY==1)
-		{
-			if(scr_state==0)
-			{
-				
-				//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],vol_per);
-	      printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
-				scr_state=1;
-				LCD_Clear(WHITE);
-				Gui_Drawbmp16(20,160,gImage_arrow_up);
-				Gui_Drawbmp16(100,160,gImage_arrow_down);
-				Gui_Drawbmp16(180,160,gImage_switch);
-				Gui_Drawbmp16(260,160,gImage_mode);
-				POINT_COLOR=RED;
-				LCD_ShowString(40,30,16,"stre",1);
-				POINT_COLOR=GREEN;
-				LCD_ShowString(100,30,16,"freq",1);
-				LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
-				DETECT_KEY=0;
-			}
-			if(scr_state==1)
-			{
-				LCD_ShowNum(270,0,vol_per,3,16);//显示ADC的值
-				printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
-				
-				if(tp_dev.x>20&&tp_dev.x<60&&tp_dev.y>160&&tp_dev.y<200)
-				{
-					if(sel_state==0)
-					{
-							if(++amplitude_level>5)
-						{
-							amplitude_level=5;	
-						}
-					}
-					else
-					{
-						if(DDSM<4)
-						 {
-						   DDSM++;
-						 }
-					}
-				}
-				if(tp_dev.x>100&&tp_dev.x<140&&tp_dev.y>160&&tp_dev.y<200)
-				{
-					if(sel_state==0)
-					{
-						if(amplitude_level>0)
-						{
-							--amplitude_level;	
-						}
-				 }
-					else
-					{
-						if(DDSM>1)
-						 {
-						  DDSM--;
-						 }
-					}
-				}
-				if(tp_dev.x>180&&tp_dev.x<220&&tp_dev.y>160&&tp_dev.y<200)
-				{
-					if(sel_state==1){
-						POINT_COLOR=RED;
-						LCD_ShowString(40,30,16,"stre",1);
-						POINT_COLOR=GREEN;
-					  LCD_ShowString(100,30,16,"freq",1);
-						sel_state=0;
-					}
-					else {
-						POINT_COLOR=RED;
-					  LCD_ShowString(100,30,16,"freq",1);
-						POINT_COLOR=GREEN;
-						LCD_ShowString(40,30,16,"stre",1);
-						sel_state=0;
-					sel_state++;}
-				}
-        if(tp_dev.x>260&&tp_dev.x<300&&tp_dev.y>160&&tp_dev.y<180)
-				{	
-						if(wave_pattern==4)wave_pattern=0;
-					  else wave_pattern++;		
-				}				
-				LCD_ShowNum(40,50,amplitude_level+1,1,16);
-				LCD_ShowNum(100,50,DDSM,1,16);
-				LCD_ShowNum(160,50,wave_pattern,1,16);
-				DETECT_KEY=0;
-			}
-		}
-	 
+		LCD_ShowNum(270,0,vol_per,3,16);//显示ADC的值
+		//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
+	  touch_process();
 	 	
-   
 //		tempfeed = adcx;
 //		temp=(float)adcx*(3.3/4096);  //归一化
 //		adcx=temp;

@@ -16,8 +16,8 @@ u16 Regulation( u16 vSet, u16 vref)  //    Vset 期望值 R   Vref 输入值
 	SetPoint = vSet;			// Set PID Setpoint ；输入PID设定值 期望值R
 	iError = SetPoint - vref;   //设定值-当前输入值 当前误差
 
-	vOut = Kp*(iError-LastError)+Ki*iError + Kd *(iError-2*LastError+PrevError);              
-
+	//vOut = Kp*(iError-LastError)+Ki*iError + Kd *(iError-2*LastError+PrevError);              
+  vOut = Kp*iError;
 	PrevError = LastError;
 	LastError = iError;	
 

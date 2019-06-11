@@ -91,16 +91,28 @@ void SysTick_Handler(void)
   * @retval None
   */
 extern uint16_t ADC_ConvertedValue[2];
+u32 temp_val=0;
+u8 t=0;
 u16 vol_per;
-//extern uint16_t flag1,flag2,flag3;
+uint16_t flag1=0,flag2=0,flag3=0;
 //volatile uint16_t Preiod_value=1;
 void DMA1_Channel1_IRQHandler(void)
 {                                  
 //	static uint8_t div_count=0;
 	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
 	{ 
-		vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化		
-//	  Data_Send_Senser(ADC_ConvertedValue,flag1,flag2,flag3);//??????
+		//vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化		
+	  
+		if(++t<10)
+			temp_val+=ADC_ConvertedValue[0]/10;
+		else if(t==10)
+		{
+			//printf("平均电压%d\r\n",temp_val);
+			//Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
+      temp_val=0;
+		  t=0;
+		}
+		
 //		if(++div_count==150)
 //		{
 //			Preiod_value=preiod(2600,ADC_ConvertedValue);
@@ -115,7 +127,7 @@ void DMA1_Channel1_IRQHandler(void)
   * @retval None
   */
 uint16_t DDS_step=0,DDSM=1;
-uint16_t temp[1][256];
+uint16_t temp[1][256];//注意数组访问时不能超出范围，否则会出现卡死
 extern uint16_t si[][256],sawtooth[][256],triangle[][256],ex[][256];
 extern char amplitude_level,wave_pattern;
 uint8_t mode_status=0;
@@ -139,20 +151,20 @@ void TIM3_IRQHandler(void)
 			 switch (wave_pattern)
 			 {
 				  case 0:
-						temp[amplitude_level][DDS_step]=si[amplitude_level][DDS_step];
+						temp[0][DDS_step]=si[amplitude_level][DDS_step];
 			     break;
 			    case 1:
-						temp[amplitude_level][DDS_step]=sawtooth[amplitude_level][DDS_step];
+						temp[0][DDS_step]=sawtooth[amplitude_level][DDS_step];
 			     break;
 				  case 3:
-						temp[amplitude_level][DDS_step]=triangle[amplitude_level][DDS_step];
+						temp[0][DDS_step]=triangle[amplitude_level][DDS_step];
 			     break;
 					case 4:
-						temp[amplitude_level][DDS_step]=ex[amplitude_level][DDS_step];
+						temp[0][DDS_step]=ex[amplitude_level][DDS_step];
 					 break;
 			 }
 				
-			 TIM_SetCompare2(TIM3, temp[amplitude_level][DDS_step]);
+			 TIM_SetCompare2(TIM3, temp[0][DDS_step]);
 			 GAS=0;
 		 }
      else//放气阶段停止占空比为0，气阀放气
@@ -178,7 +190,7 @@ void TIM4_IRQHandler(void)
 	if(TIM_GetITStatus(TIM4,TIM_IT_Update)!=RESET)
 	{
 		
-		if(++tim4_counter1>=1000)
+		if(++tim4_counter1>=500)
 		{
 			tim4_counter2++;
 			tim4_counter1=0;
