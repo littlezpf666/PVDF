@@ -62,16 +62,14 @@ char touch_process(void)
 				Gui_Drawbmp16(100,160,gImage_arrow_down);
 				Gui_Drawbmp16(180,160,gImage_switch);
 				Gui_Drawbmp16(260,160,gImage_mode);
-				POINT_COLOR=RED;
-				LCD_ShowString(40,30,16,"stre",1);
-				POINT_COLOR=GREEN;
-				LCD_ShowString(100,30,16,"freq",1);
+				Show_Str(40,30,RED,WHITE,"强度",16,1);
+				Show_Str(100,30,GREEN,WHITE,"频率",16,1);
 				LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
 				DETECT_KEY=0;
 			}
 			if(scr_state==1)
 			{
-				if((tp_dev.x>20&&tp_dev.x<60&&tp_dev.y>160&&tp_dev.y<200)||uart_comm[0]=='1')
+				if(KEY_ADD||uart_comm[0]=='1')
 				{
 					if(sel_state==0)
 					{
@@ -79,63 +77,49 @@ char touch_process(void)
 //						{
 //							amplitude_level=5;	
 //						}
-						if(amplitude_level<5)
-						 {
-						   amplitude_level++;
-						 }
+						if(amplitude_level<5) amplitude_level++; 
 					}
 					else
 					{
-						if(DDSM<4)
-						 {
-						   DDSM++;
-						 }
+						if(DDSM<4) DDSM++;
 					}
 				}
-				if((tp_dev.x>100&&tp_dev.x<140&&tp_dev.y>160&&tp_dev.y<200)||uart_comm[1]=='1')
+				if(KEY_SUB||uart_comm[1]=='1')
 				{
 					if(sel_state==0)
 					{
-						if(amplitude_level>0)
-						{
-							--amplitude_level;	
-						}
+						if(amplitude_level>0) --amplitude_level;
 				  }
 					else
 					{
-						if(DDSM>1)
-						 {
-						  DDSM--;
-						 }
+						if(DDSM>1)DDSM--;
 					}
 				}
-				if((tp_dev.x>180&&tp_dev.x<220&&tp_dev.y>160&&tp_dev.y<200)||uart_comm[2]=='1')
+				if(KEY_SWITCH||uart_comm[2]=='1')
 				{
 					if(sel_state==1){
-						POINT_COLOR=RED;
-						LCD_ShowString(40,30,16,"stre",1);
-						POINT_COLOR=GREEN;
-					  LCD_ShowString(100,30,16,"freq",1);
+						Show_Str(40,30,RED,WHITE,"强度",16,1);
+					  Show_Str(100,30,GREEN,WHITE,"频率",16,1);
 						sel_state=0;
 					}
 					else {
-						POINT_COLOR=RED;
-					  LCD_ShowString(100,30,16,"freq",1);
-						POINT_COLOR=GREEN;
-						LCD_ShowString(40,30,16,"stre",1);
+						Show_Str(100,30,RED,WHITE,"频率",16,1);
+						Show_Str(40,30,GREEN,WHITE,"强度",16,1);
 						sel_state=0;
 					sel_state++;}
 				}
-        if(tp_dev.x>260&&tp_dev.x<300&&tp_dev.y>160&&tp_dev.y<180)
+        if(KEY_MODE)
 				{	
 						if(wave_pattern==4)wave_pattern=0;
 					  else wave_pattern++;		
 				}
-        if(DETECT_USART_COMM==1)				
-        wave_pattern=uart_comm[3]-48;				
-				LCD_ShowNum(40,50,amplitude_level+1,1,16);
-				LCD_ShowNum(100,50,DDSM,1,16);
-				LCD_ShowNum(160,50,wave_pattern,1,16);
+        if((DETECT_USART_COMM==1)&&(uart_comm[3]-48<5))
+        {
+					wave_pattern=uart_comm[3]-48;
+				}									
+				LCD_ShowNum(40,50,amplitude_level+1,1,48);
+				LCD_ShowNum(100,50,DDSM,1,48);
+				LCD_ShowNum(160,50,wave_pattern,1,48);
 				DETECT_KEY=0;
 				DETECT_USART_COMM=0;
 			}
@@ -162,8 +146,9 @@ char touch_process(void)
 /********************LCD/touch_init***********************/
 	LCD_Init();			 	   
 	Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
-  	 
-	Gui_Drawbmp16(10,55,gImage_shool);
+  Show_Str(150,100,LIGHTGREEN,WHITE,"精控实验室",24,1);
+		 
+	Gui_Drawbmp16(10,60,gImage_shool);
 	
 	TP_Init();
 	EXTIX_Init(); 	 //按键中断初始化
@@ -175,10 +160,10 @@ char touch_process(void)
 /********************DMA/ADC_init***********************/
 	DMA_Config(); 
 	Adc_Init();	//ADC初始化Adc_Init();
-
+  
   while(1)   
 	{
-		LCD_ShowNum(270,0,vol_per,3,16);//显示ADC的值
+		//LCD_ShowNum(270,0,temp_val,2,16);//显示ADC的值
 		//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
 	  touch_process();
 	 	

@@ -2,6 +2,7 @@
 #include "string.h"
 #include "font.h" 
 #include "delay.h"
+#include "usart.h"
 #include "gui.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
@@ -256,26 +257,50 @@ void LCD_ShowChar(u16 x,u16 y,u16 fc, u16 bc, u8 num,u8 size,u8 mode)
 {  
     u8 temp;
     u8 pos,t;
+		u8 baise;
 	u16 colortemp=POINT_COLOR;      
-		   
+	if(size==48)
+	{
+		num=num-' '-16;
+	}	
+  else		
 	num=num-' ';//得到偏移后的值
 	LCD_SetWindows(x,y,x+size/2-1,y+size-1);//设置单个文字显示窗口
 	if(!mode) //非叠加方式
 	{
-		
-		for(pos=0;pos<size;pos++)
+		if(size==48)
 		{
-			if(size==12)temp=asc2_1206[num][pos];//调用1206字体
-			else temp=asc2_1608[num][pos];		 //调用1608字体
-			for(t=0;t<size/2;t++)
-		    {                 
-		        if(temp&0x01)LCD_DrawPoint_16Bit(fc); 
-				else LCD_DrawPoint_16Bit(bc); 
-				temp>>=1; 
+			for(pos=0;pos<size;pos++)
+			{
+				for(baise=0;baise<3;baise++)
+				{
+					temp=asc2_4020[num][pos*3+baise];
+					for(t=0;t<8;t++)
+						{                 
+							if(temp&0x80)LCD_DrawPoint_16Bit(fc); 
+							else LCD_DrawPoint_16Bit(bc); 
+							temp<<=1; 				
+						}
+				}
+			}
+		}
+		else
+		{
+				for(pos=0;pos<size;pos++)
+			{
+				if(size==12)temp=asc2_1206[num][pos];//调用1206字体
+				else temp=asc2_1608[num][pos];		 //调用1608字体
 				
-		    }
-			
+				for(t=0;t<size/2;t++)
+					{                 
+							if(temp&0x01)LCD_DrawPoint_16Bit(fc); 
+					else LCD_DrawPoint_16Bit(bc); 
+					temp>>=1; 
+					
+					}
+			}	
 		}	
+	
 	}else//叠加方式
 	{
 		for(pos=0;pos<size;pos++)
@@ -451,7 +476,8 @@ void GUI_DrawFont24(u16 x, u16 y, u16 fc, u16 bc, u8 *s,u8 mode)
 			for (k=0;k<HZnum;k++) 
 			{
 			  if ((tfont24[k].Index[0]==*(s))&&(tfont24[k].Index[1]==*(s+1)))
-			  { 	LCD_SetWindows(x,y,x+24-1,y+24-1);
+			  { 	
+					  LCD_SetWindows(x,y,x+24-1,y+24-1);
 				    for(i=0;i<24*3;i++)
 				    {
 							for(j=0;j<8;j++)
@@ -462,21 +488,19 @@ void GUI_DrawFont24(u16 x, u16 y, u16 fc, u16 bc, u8 *s,u8 mode)
 									else LCD_DrawPoint_16Bit(bc);
 								}
 							else
-							{
-								POINT_COLOR=fc;
-								if(tfont24[k].Msk[i]&(0x80>>j))	LCD_DrawPoint(x,y);//画一个点
-								x++;
-								if((x-x0)==24)
 								{
-									x=x0;
-									y++;
-									break;
+									POINT_COLOR=fc;
+									if(tfont24[k].Msk[i]&(0x80>>j))	LCD_DrawPoint(x,y);//画一个点
+									x++;
+									if((x-x0)==24)
+									{
+										x=x0;
+										y++;
+										break;
+									}
 								}
-							}
-						}
-					}
-					
-					
+						  }
+					  }
 				}				  	
 				continue;  //查找到对应点阵字库立即退出，防止多个汉字重复取模带来影响
 			}

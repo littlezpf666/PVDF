@@ -95,29 +95,22 @@ u32 temp_val=0;
 u8 t=0;
 u16 vol_per;
 uint16_t flag1=0,flag2=0,flag3=0;
-//volatile uint16_t Preiod_value=1;
+
 void DMA1_Channel1_IRQHandler(void)
 {                                  
-//	static uint8_t div_count=0;
+
 	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
 	{ 
 		//vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化		
-	  
-		if(++t<10)
-			temp_val+=ADC_ConvertedValue[0]/10;
-		else if(t==10)
+		if(++t<40)
+			temp_val+=ADC_ConvertedValue[0]/40;
+		else if(t==40)
 		{
 			//printf("平均电压%d\r\n",temp_val);
-			//Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
+			Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
       temp_val=0;
 		  t=0;
 		}
-		
-//		if(++div_count==150)
-//		{
-//			Preiod_value=preiod(2600,ADC_ConvertedValue);
-//		  div_count=0;
-//		}
 		DMA_ClearFlag(DMA1_FLAG_GL1);
 	}		    
 }

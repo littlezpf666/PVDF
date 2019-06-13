@@ -32,7 +32,11 @@
 
 #define TP_PRES_DOWN 0x80  //触屏被按下	  
 #define TP_CATH_PRES 0x40  //有按键按下了 	  
-#define EEPROM 0										    
+#define EEPROM 0	
+#define KEY_ADD (tp_dev.x>20&&tp_dev.x<60&&tp_dev.y>160&&tp_dev.y<200)
+#define KEY_SUB (tp_dev.x>100&&tp_dev.x<140&&tp_dev.y>160&&tp_dev.y<200)
+#define KEY_SWITCH (tp_dev.x>180&&tp_dev.x<220&&tp_dev.y>160&&tp_dev.y<200)
+#define KEY_MODE (tp_dev.x>260&&tp_dev.x<300&&tp_dev.y>160&&tp_dev.y<180)
 //触摸屏控制器
 typedef struct
 {
