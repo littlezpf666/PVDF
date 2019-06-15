@@ -179,7 +179,7 @@ void TIM3_Mode_config(u16 crr2_val,u16 crr3_val)
 	//TIM_ARRPreloadConfig(TIM3, ENABLE);
 	/*********************中断设置***************************/
 	TIM_ClearFlag(TIM3, TIM_FLAG_Update);
-  TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
+  TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
 	TIM_NVIC_Configuration();
 	
 	TIM_Cmd(TIM3, ENABLE);//使能计数器
@@ -201,7 +201,7 @@ void TIM4_Mode_config(u16 arr,u16 psc)
 
   	/*********************中断设置***************************/
 	TIM_ClearFlag(TIM4, TIM_FLAG_Update);
-  TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE);
+  TIM_ITConfig(TIM4,TIM_IT_Update,DISABLE);
 	TIM_Cmd(TIM4, ENABLE);
 	TIM_NVIC_Configuration();
 						 

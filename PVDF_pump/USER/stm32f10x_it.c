@@ -101,13 +101,14 @@ void DMA1_Channel1_IRQHandler(void)
 
 	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
 	{ 
-		//vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化		
+		vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化	
+    	
 		if(++t<40)
 			temp_val+=ADC_ConvertedValue[0]/40;
 		else if(t==40)
 		{
 			//printf("平均电压%d\r\n",temp_val);
-			Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
+			//Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
       temp_val=0;
 		  t=0;
 		}
@@ -131,13 +132,14 @@ void TIM3_IRQHandler(void)
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)!=RESET)
 	{
 		DDS_step=DDS_step+DDSM;
-		if(DDS_step>255)
+		if(DDS_step>125)
 		 {
 			DDS_step=0;
-			if(mode_status==0)
-			mode_status++;
-			else if(mode_status==1)
-			mode_status=0;	
+			
+//			if(mode_status==0)
+//			mode_status++;
+//			else if(mode_status==1)
+//			mode_status=0;	
 		 }
 		 if(stop_status==0)//在吸气阶段电机不断改变占空比
 		 {
@@ -158,12 +160,12 @@ void TIM3_IRQHandler(void)
 			 }
 				
 			 TIM_SetCompare2(TIM3, temp[0][DDS_step]);
-			 GAS=0;
+			 
 		 }
      else//放气阶段停止占空比为0，气阀放气
 		 {
 			 TIM_SetCompare2(TIM3, 0);
-			 GAS=1;
+			 
 		 }
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
 	}
@@ -192,30 +194,46 @@ void TIM4_IRQHandler(void)
 		if(tim4_counter2==time_interval)
 			{
 				stop_status=0;
+				GAS=0;
 			}
 			if(tim4_counter2==time_interval*2)
 			{
 				stop_status=1;
 			  tim4_counter2=0;
-				
+				GAS=1;
 	      
 			}	
 		TIM_ClearITPendingBit(TIM4,TIM_IT_Update);
 	}
 		
 }
-char DETECT_KEY=0;
+char DETECT_TOUCH=0;
 void EXTI3_IRQHandler(void)
 {
 	if (EXTI_GetITStatus(EXTI_Line3) != RESET){
 		  delay_ms(10);
 		  if(PEN==0)
 			{
-			 DETECT_KEY=1;
+			 DETECT_TOUCH=1;
 		   TP_Read_XY2(&tp_dev.y,&tp_dev.x);
 			 tp_dev.x=tp_dev.xfac*tp_dev.x+tp_dev.xoff;//将结果转换为屏幕坐标
 			 tp_dev.y=tp_dev.yfac*tp_dev.y+tp_dev.yoff;
 			}
       EXTI_ClearITPendingBit(EXTI_Line3);     
+	  }
+}
+char DETECT_KEY=0;
+extern char scr_state;
+void EXTI9_5_IRQHandler(void)
+{
+	if (EXTI_GetITStatus(EXTI_Line8) != RESET){
+		  delay_ms(10);
+		  if(PAin(8)==0)
+			{
+				
+				DETECT_KEY=1;
+				//printf("按键按下");
+			}
+      EXTI_ClearITPendingBit(EXTI_Line8);     
 	  }
 }

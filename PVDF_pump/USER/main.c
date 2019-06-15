@@ -38,7 +38,7 @@
 
 
 /******************************/  
-extern char DETECT_KEY,DETECT_USART_COMM;
+extern char DETECT_TOUCH,DETECT_KEY,DETECT_USART_COMM;
 extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step,DDSM;
@@ -51,7 +51,7 @@ char uart_comm[4];
 
 char touch_process(void)
 {
-		if(DETECT_KEY==1||DETECT_USART_COMM==1)
+		if(DETECT_TOUCH==1||DETECT_USART_COMM==1)
 		{
 			if(scr_state==0)
 			{
@@ -103,8 +103,8 @@ char touch_process(void)
 						sel_state=0;
 					}
 					else {
-						Show_Str(100,30,RED,WHITE,"频率",16,1);
-						Show_Str(40,30,GREEN,WHITE,"强度",16,1);
+						Show_Str(100,50,RED,WHITE,"频率",16,1);
+						Show_Str(40,50,GREEN,WHITE,"强度",16,1);
 						sel_state=0;
 					sel_state++;}
 				}
@@ -117,16 +117,43 @@ char touch_process(void)
         {
 					wave_pattern=uart_comm[3]-48;
 				}									
-				LCD_ShowNum(40,50,amplitude_level+1,1,48);
-				LCD_ShowNum(100,50,DDSM,1,48);
-				LCD_ShowNum(160,50,wave_pattern,1,48);
-				DETECT_KEY=0;
+				LCD_ShowNum(40,70,amplitude_level+1,1,48);
+				LCD_ShowNum(100,70,DDSM,1,48);
+				LCD_ShowNum(160,70,wave_pattern,1,48);
+				DETECT_TOUCH=0;
 				DETECT_USART_COMM=0;
 			}
 		}
 		return 0;
 }
-
+char key_process(void)
+{
+	static char mode=0;
+	if(DETECT_KEY==1)
+	{
+		scr_state=0;
+		sel_state=0;
+		amplitude_level=0;
+		wave_pattern=0;
+		if(mode)
+		{
+			TIM_SetCompare2(TIM3, 0);
+			TIM_SetCompare3(TIM3, 0);
+			TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
+	
+			TIM_ITConfig(TIM4,TIM_IT_Update,DISABLE);
+		}
+		else
+		{
+			TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
+			TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE);
+		}
+		mode=~mode;
+		DETECT_KEY=0;
+	}
+		
+	return 0;
+}
  int main(void)
  {	
   char tp_x;
@@ -141,7 +168,7 @@ char touch_process(void)
 	printf("-----------------\r\n");
 	 
 /********************TIM3/4_init**************************/
-	TIM_Init(2048,0); 
+	TIM_Init(0,0); 
 	GAS_VALVE_Init(); 
 /********************LCD/touch_init***********************/
 	LCD_Init();			 	   
@@ -163,10 +190,10 @@ char touch_process(void)
   
   while(1)   
 	{
-		//LCD_ShowNum(270,0,temp_val,2,16);//显示ADC的值
+		LCD_ShowNum(270,0,vol_per,2,16);//显示ADC的值	
 		//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
 	  touch_process();
-	 	
+	 	key_process();
 //		tempfeed = adcx;
 //		temp=(float)adcx*(3.3/4096);  //归一化
 //		adcx=temp;
