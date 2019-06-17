@@ -13,6 +13,7 @@
 #include "mod.h"
 #include "touch.h"
 #include "pic.h"
+#include "math.h"
 /*一个源文件调用另一个源文件的函数只需要声明一下另一文件中的函数名就可以了，
 与原函数同名的.h文件的作用：
 对调用的文件来说起作用的是.h中的函数声明，有了这个声明就可以调用对应源函数中的函数
@@ -39,6 +40,7 @@
 
 /******************************/  
 extern char DETECT_TOUCH,DETECT_KEY,DETECT_USART_COMM;
+//extern char DETECT_USART_COMM;
 extern uint16_t ADC_ConvertedValue[2];
 extern uint8_t mode_status,stop_status;
 extern uint16_t DDS_step,DDSM;
@@ -103,8 +105,8 @@ char touch_process(void)
 						sel_state=0;
 					}
 					else {
-						Show_Str(100,50,RED,WHITE,"频率",16,1);
-						Show_Str(40,50,GREEN,WHITE,"强度",16,1);
+						Show_Str(100,30,RED,WHITE,"频率",16,1);
+						Show_Str(40,30,GREEN,WHITE,"强度",16,1);
 						sel_state=0;
 					sel_state++;}
 				}
@@ -131,22 +133,21 @@ char key_process(void)
 	static char mode=0;
 	if(DETECT_KEY==1)
 	{
-		scr_state=0;
-		sel_state=0;
-		amplitude_level=0;
-		wave_pattern=0;
+//		scr_state=0;
+//		sel_state=0;
+//		amplitude_level=0;
+//		wave_pattern=0;
 		if(mode)
 		{
+			amplitude_level=0;
+			LCD_ShowNum(40,70,amplitude_level+1,1,48);
 			TIM_SetCompare2(TIM3, 0);
 			TIM_SetCompare3(TIM3, 0);
 			TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
-	
-			TIM_ITConfig(TIM4,TIM_IT_Update,DISABLE);
 		}
 		else
 		{
-			TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
-			TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE);
+			TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);			
 		}
 		mode=~mode;
 		DETECT_KEY=0;
@@ -154,6 +155,19 @@ char key_process(void)
 		
 	return 0;
 }
+char generate_wave()
+{
+	u8 time=0;
+	u16 y;
+		for(time=0;time<128;time++)
+	{
+		y=400*sin(6.28/255*(time+192))+1200;
+		printf("%d,",y);
+	}
+  printf("\n\r");
+	return 0;
+}
+
  int main(void)
  {	
   char tp_x;
@@ -187,13 +201,15 @@ char key_process(void)
 /********************DMA/ADC_init***********************/
 	DMA_Config(); 
 	Adc_Init();	//ADC初始化Adc_Init();
-  
+  //generate_wave();
   while(1)   
 	{
-		LCD_ShowNum(270,0,vol_per,2,16);//显示ADC的值	
 		//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
+		LCD_ShowNum(270,0,vol_per,2,16);//显示ADC的值	
+		
 	  touch_process();
 	 	key_process();
+		
 //		tempfeed = adcx;
 //		temp=(float)adcx*(3.3/4096);  //归一化
 //		adcx=temp;

@@ -108,7 +108,17 @@ void DMA1_Channel1_IRQHandler(void)
 		else if(t==40)
 		{
 			//printf("平均电压%d\r\n",temp_val);
-			//Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
+//			 if(Regulation(3600, temp_val)>0)
+//			 {
+//				 TIM_SetCompare2(TIM3, Regulation(3600, temp_val));
+//				 GAS=0;
+//			 }
+//			 else
+//			 {
+//				 TIM_SetCompare2(TIM3, 0);
+//				 GAS=1;
+//			 }
+			Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
       temp_val=0;
 		  t=0;
 		}
@@ -132,21 +142,17 @@ void TIM3_IRQHandler(void)
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)!=RESET)
 	{
 		DDS_step=DDS_step+DDSM;
-		if(DDS_step>125)
+		if(DDS_step>255)//放气阶段停止占空比为0，气阀放气
 		 {
 			DDS_step=0;
-			
-//			if(mode_status==0)
-//			mode_status++;
-//			else if(mode_status==1)
-//			mode_status=0;	
 		 }
-		 if(stop_status==0)//在吸气阶段电机不断改变占空比
+		if(DDS_step<129)//放气阶段停止占空比为0，气阀放气
 		 {
+			 GAS=0;
 			 switch (wave_pattern)
 			 {
 				  case 0:
-						temp[0][DDS_step]=si[amplitude_level][DDS_step];
+						temp[0][DDS_step]=(amplitude_level+1)*(si[0][DDS_step]-800)+800;
 			     break;
 			    case 1:
 						temp[0][DDS_step]=sawtooth[amplitude_level][DDS_step];
@@ -158,15 +164,19 @@ void TIM3_IRQHandler(void)
 						temp[0][DDS_step]=ex[amplitude_level][DDS_step];
 					 break;
 			 }
-				
 			 TIM_SetCompare2(TIM3, temp[0][DDS_step]);
-			 
+			
+//			if(mode_status==0)
+//			mode_status++;
+//			else if(mode_status==1)
+//			mode_status=0;	
 		 }
-     else//放气阶段停止占空比为0，气阀放气
+		 else//在吸气阶段电机不断改变占空比
 		 {
 			 TIM_SetCompare2(TIM3, 0);
-			 
+			 GAS=1; 
 		 }
+    
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
 	}
 		
