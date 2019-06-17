@@ -50,6 +50,29 @@ char time_interval=3;
 char sel_state=0,scr_state=0,wave_pattern=0,amplitude_level=0;
 char count_press;
 char uart_comm[4];
+void scr0_content()
+{
+		Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
+		Show_Str(150,100,LIGHTGREEN,WHITE,"精控实验室",24,1);
+			 
+		Gui_Drawbmp16(10,60,gImage_shool);
+}
+void scr1_content()
+{
+		Gui_Drawbmp16(20,170,gImage_arrow_up);
+		Gui_Drawbmp16(100,170,gImage_arrow_down);
+		Gui_Drawbmp16(180,170,gImage_switch);
+		Gui_Drawbmp16(260,170,gImage_mode);
+	  Gui_Drawbmp16(180,0,gImage_wifi);
+		Show_Str(40,40,RED,WHITE,"强度",16,1);
+		Show_Str(100,40,GREEN,WHITE,"频率",16,1);
+		LCD_DrawRectangle(170, 60, 300, 140);
+		Show_Str(180,70,RED,WHITE,"吸乳",16,1);
+		Show_Str(260,70,GREEN,WHITE,"开奶",16,1);
+		Show_Str(180,110,GREEN,WHITE,"催乳",16,1);
+		Show_Str(260,110,GREEN,WHITE,"按摩",16,1);
+		LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
+}
 
 char touch_process(void)
 {
@@ -60,13 +83,7 @@ char touch_process(void)
 	      printf("\r\n坐标x:%d,坐标y:%d",tp_dev.x,tp_dev.y);
 				scr_state=1;
 				LCD_Clear(WHITE);
-				Gui_Drawbmp16(20,160,gImage_arrow_up);
-				Gui_Drawbmp16(100,160,gImage_arrow_down);
-				Gui_Drawbmp16(180,160,gImage_switch);
-				Gui_Drawbmp16(260,160,gImage_mode);
-				Show_Str(40,30,RED,WHITE,"强度",16,1);
-				Show_Str(100,30,GREEN,WHITE,"频率",16,1);
-				LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
+				scr1_content();
 				DETECT_KEY=0;
 			}
 			if(scr_state==1)
@@ -97,31 +114,52 @@ char touch_process(void)
 						if(DDSM>1)DDSM--;
 					}
 				}
+				
 				if(KEY_SWITCH||uart_comm[2]=='1')
 				{
 					if(sel_state==1){
-						Show_Str(40,30,RED,WHITE,"强度",16,1);
-					  Show_Str(100,30,GREEN,WHITE,"频率",16,1);
+						Show_Str(40,40,RED,WHITE,"强度",16,1);
+					  Show_Str(100,40,GREEN,WHITE,"频率",16,1);
 						sel_state=0;
 					}
 					else {
-						Show_Str(100,30,RED,WHITE,"频率",16,1);
-						Show_Str(40,30,GREEN,WHITE,"强度",16,1);
+						Show_Str(100,40,RED,WHITE,"频率",16,1);
+						Show_Str(40,40,GREEN,WHITE,"强度",16,1);
 						sel_state=0;
 					sel_state++;}
 				}
         if(KEY_MODE)
 				{	
-						if(wave_pattern==4)wave_pattern=0;
-					  else wave_pattern++;		
+						if(wave_pattern==3)wave_pattern=0;
+					  else wave_pattern++;
+					  switch (wave_pattern)
+						{
+							case 0:
+								Show_Str(180,70,RED,WHITE,"吸乳",16,1);
+								Show_Str(260,110,GREEN,WHITE,"按摩",16,1);
+							break;
+							case 1:
+								Show_Str(260,70,RED,WHITE,"开奶",16,1);
+								Show_Str(180,70,GREEN,WHITE,"吸乳",16,1);
+							break;
+							case 2:
+								Show_Str(180,110,RED,WHITE,"催乳",16,1);
+								Show_Str(260,70,GREEN,WHITE,"开奶",16,1);
+							break;
+							case 3:
+								Show_Str(260,110,RED,WHITE,"按摩",16,1);
+								Show_Str(180,110,GREEN,WHITE,"催乳",16,1);
+							break;	
+						}
+							
 				}
         if((DETECT_USART_COMM==1)&&(uart_comm[3]-48<5))
         {
 					wave_pattern=uart_comm[3]-48;
 				}									
-				LCD_ShowNum(40,70,amplitude_level+1,1,48);
-				LCD_ShowNum(100,70,DDSM,1,48);
-				LCD_ShowNum(160,70,wave_pattern,1,48);
+				LCD_ShowNum(40,80,amplitude_level+1,1,48);
+				LCD_ShowNum(100,80,DDSM,1,48);
+				//LCD_ShowNum(160,70,wave_pattern,1,48);
 				DETECT_TOUCH=0;
 				DETECT_USART_COMM=0;
 			}
@@ -140,9 +178,10 @@ char key_process(void)
 		if(mode)
 		{
 			amplitude_level=0;
-			LCD_ShowNum(40,70,amplitude_level+1,1,48);
+			LCD_ShowNum(40,80,amplitude_level+1,1,48);
 			TIM_SetCompare2(TIM3, 0);
 			TIM_SetCompare3(TIM3, 0);
+			GAS=0;
 			TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
 		}
 		else
@@ -185,12 +224,9 @@ char generate_wave()
 	TIM_Init(0,0); 
 	GAS_VALVE_Init(); 
 /********************LCD/touch_init***********************/
-	LCD_Init();			 	   
-	Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
-  Show_Str(150,100,LIGHTGREEN,WHITE,"精控实验室",24,1);
-		 
-	Gui_Drawbmp16(10,60,gImage_shool);
-	
+	LCD_Init();
+  scr0_content();	 
+
 	TP_Init();
 	EXTIX_Init(); 	 //按键中断初始化
 	tp_dev.xfac=(float)(lcddev.width-40)/(400-3800);//得到xfac		 

@@ -191,7 +191,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 						rx_status=0;
 					break;
 				case 3:
-					if(Res==0x0d)
+					if(Res==0x0d)//等待空格
 						rx_status=4;
 					else
 					{
@@ -206,7 +206,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 					}		 
 					break;
         case 4:
-					if(Res==0x0a)
+					if(Res==0x0a)//等待回车
 					{
 						 for(i=0;i<string_num;i++)
 						 {
