@@ -52,6 +52,7 @@ char count_press;
 char uart_comm[4];
 void scr0_content()
 {
+	  LCD_ShowChar(300,0,GREEN,WHITE,'%',16,0);//电量百分比
 		Gui_StrCenter(0,64,GREEN,WHITE,"上海师范大学",32,1);//居中显示
 		Show_Str(150,100,LIGHTGREEN,WHITE,"精控实验室",24,1);
 			 
@@ -76,6 +77,7 @@ void scr1_content()
 
 char touch_process(void)
 {
+	char status_buffer[7]="pvdf";
 		if(DETECT_TOUCH==1||DETECT_USART_COMM==1)
 		{
 			if(scr_state==0)
@@ -88,8 +90,10 @@ char touch_process(void)
 			}
 			if(scr_state==1)
 			{
+				
 				if(KEY_ADD||uart_comm[0]=='1')
 				{
+
 					if(sel_state==0)
 					{
 //							if(++amplitude_level>5)
@@ -103,6 +107,7 @@ char touch_process(void)
 						if(DDSM<4) DDSM++;
 					}
 				}
+
 				if(KEY_SUB||uart_comm[1]=='1')
 				{
 					if(sel_state==0)
@@ -128,7 +133,8 @@ char touch_process(void)
 						sel_state=0;
 					sel_state++;}
 				}
-        if(KEY_MODE)
+
+        if(KEY_MODE||uart_comm[3]=='1')
 				{	
 						if(wave_pattern==3)wave_pattern=0;
 					  else wave_pattern++;
@@ -151,17 +157,30 @@ char touch_process(void)
 								Show_Str(180,110,GREEN,WHITE,"催乳",16,1);
 							break;	
 						}
-							
 				}
-        if((DETECT_USART_COMM==1)&&(uart_comm[3]-48<5))
+				if(DETECT_USART_COMM==1)
+				{
+				status_buffer[4]=amplitude_level+48;
+				status_buffer[5]=DDSM+48;
+				status_buffer[6]=sel_state+48;
+				status_buffer[7]=wave_pattern+48;
+				printf("%s",status_buffer);
+					DETECT_USART_COMM=0;
+				}
+				
+        /*if((DETECT_USART_COMM==1)&&(uart_comm[3]-48<5))
         {
 					wave_pattern=uart_comm[3]-48;
-				}									
+				}	*/
 				LCD_ShowNum(40,80,amplitude_level+1,1,48);
 				LCD_ShowNum(100,80,DDSM,1,48);
-				//LCD_ShowNum(160,70,wave_pattern,1,48);
-				DETECT_TOUCH=0;
-				DETECT_USART_COMM=0;
+        if(DETECT_TOUCH==1)	
+				{
+					//LCD_ShowNum(160,70,wave_pattern,1,48);
+					DETECT_TOUCH=0;
+				}					
+				
+				
 			}
 		}
 		return 0;
@@ -241,7 +260,7 @@ char generate_wave()
   while(1)   
 	{
 		//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
-		LCD_ShowNum(270,0,vol_per,2,16);//显示ADC的值	
+		LCD_ShowNum(280,0,vol_per,2,16);//显示ADC的值	
 		
 	  touch_process();
 	 	key_process();

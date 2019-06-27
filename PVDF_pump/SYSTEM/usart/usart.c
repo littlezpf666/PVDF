@@ -208,15 +208,15 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
         case 4:
 					if(Res==0x0a)//等待回车
 					{
-						 for(i=0;i<string_num;i++)
+						 /*for(i=0;i<string_num;i++)
 						 {
 							 printf("%c",USART_RX_BUF[i]);
 							 
 						 }
-						 printf("\r\n");
+						 printf("\r\n");*/
 						 //string_process(USART_RX_BUF);
 						 strncpy(uart_comm,USART_RX_BUF,4);
-						 printf("%s\r\n",uart_comm);
+						 //printf("%s\r\n",uart_comm);
 						 DETECT_USART_COMM=1;
 					 }
 					 memset(USART_RX_BUF,0,string_num);

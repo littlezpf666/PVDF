@@ -92,36 +92,46 @@ void SysTick_Handler(void)
   */
 extern uint16_t ADC_ConvertedValue[2];
 u32 temp_val=0;
-u8 t=0;
 u16 vol_per;
 uint16_t flag1=0,flag2=0,flag3=0;
-
+uint16_t buffer[40]={0};
 void DMA1_Channel1_IRQHandler(void)
 {                                  
-
+  char i;
 	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
 	{ 
-		vol_per=(int)((float)ADC_ConvertedValue[1]/4096*100);  //归一化	
-    	
-		if(++t<40)
-			temp_val+=ADC_ConvertedValue[0]/40;
-		else if(t==40)
+		vol_per=(int)((float)ADC_ConvertedValue[1]/3400*100);  //归一化	
+    buffer[0]=ADC_ConvertedValue[0];	
+		for(i=40;i>0;i--)
 		{
-			//printf("平均电压%d\r\n",temp_val);
-//			 if(Regulation(3600, temp_val)>0)
-//			 {
-//				 TIM_SetCompare2(TIM3, Regulation(3600, temp_val));
-//				 GAS=0;
-//			 }
-//			 else
-//			 {
-//				 TIM_SetCompare2(TIM3, 0);
-//				 GAS=1;
-//			 }
-			Data_Send_Senser(temp_val,flag1,flag2,flag3);//??????
-      temp_val=0;
-		  t=0;
+			buffer[i]=buffer[i-1];
 		}
+		for(i=0;i<40;i++)
+		{
+			temp_val+=buffer[i]/40;
+		}
+		Data_Send_Senser((temp_val-1600),vol_per,flag2,flag3);
+		temp_val=0;
+//		if(++t<40)
+//			temp_val+=ADC_ConvertedValue[0]/40;
+//		else if(t==40)
+//		{
+//			
+//			//printf("平均电压%d\r\n",temp_val);
+////			 if(Regulation(3600, temp_val)>0)
+////			 {
+////				 TIM_SetCompare2(TIM3, Regulation(3600, temp_val));
+////				 GAS=0;
+////			 }
+////			 else
+////			 {
+////				 TIM_SetCompare2(TIM3, 0);
+////				 GAS=1;
+////			 }
+//			Data_Send_Senser(10*(temp_val-3200),flag1,flag2,flag3);//??????
+//      temp_val=0;
+//		  t=0;
+//		}
 		DMA_ClearFlag(DMA1_FLAG_GL1);
 	}		    
 }
