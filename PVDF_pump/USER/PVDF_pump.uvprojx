@@ -227,7 +227,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;.\BSP\ADC;.\BSP\KEY;.\BSP\MOD;.\BSP\PID;.\BSP\LED;.\BSP\TIMER;..\SYSTEM\sys;..\SYSTEM\delay;..\SYSTEM\usart;..\CORE;..\STM32F10x_FWLib\inc;.\BSP\LCD_SPI;.\BSP\TOUCH;.\BSP\IIC;.\BSP\24CXX;.\BSP\DAC;.\BSP\NVIC;.\BSP\DMA;.\cJSON</IncludePath>
+              <IncludePath>..\USER;.\BSP\ADC;.\BSP\KEY;.\BSP\MOD;.\BSP\PID;.\BSP\LED;.\BSP\TIMER;..\SYSTEM\sys;..\SYSTEM\delay;..\SYSTEM\usart;..\CORE;..\STM32F10x_FWLib\inc;.\BSP\LCD_SPI;.\BSP\TOUCH;.\BSP\IIC;.\BSP\24CXX;.\BSP\DAC;.\BSP\NVIC;.\BSP\DMA;.\cJSON;.\Interaction;.\GUI;.\MALLOC</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -437,9 +437,14 @@
               <FilePath>.\startup_stm32f10x_md.s</FilePath>
             </File>
             <File>
+              <FileName>interaction.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Interaction\interaction.c</FilePath>
+            </File>
+            <File>
               <FileName>GUI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\GUI.c</FilePath>
+              <FilePath>.\GUI\GUI.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -542,11 +547,6 @@
               <FilePath>..\STM32F10x_FWLib\src\stm32f10x_adc.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_fsmc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\STM32F10x_FWLib\src\stm32f10x_fsmc.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f10x_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\STM32F10x_FWLib\src\stm32f10x_gpio.c</FilePath>
@@ -580,11 +580,6 @@
               <FileName>stm32f10x_spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\STM32F10x_FWLib\src\stm32f10x_spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x_dac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\STM32F10x_FWLib\src\stm32f10x_dac.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,6 +1,7 @@
-#include "sys.h"
+
 #include "usart.h"
-#include "string.h"
+
+
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -35,7 +36,7 @@
 
 //////////////////////////////////////////////////////////////////
 //加入以下代码,支持printf函数,而不需要选择use MicroLIB	  
-#if 1
+#if 0
 #pragma import(__use_no_semihosting)             
 //标准库需要的支持函数                 
 struct __FILE 
@@ -58,40 +59,9 @@ int fputc(int ch, FILE *f)
 	return ch;
 }
 #endif 
-char string_process(char command[])
-{
-	//char command[] = "add|sub#11*switch#22*mode#33*mo12345de#33ascas";
-	char *comm1="add|sub", *comm2="switch",*comm3="mode";
-	char *s[5];//用存储分割之后字符串的数组
-	char *p,*p1;
-	char num_command=0;
-	int i=0,ptr; 
 
-	p = strtok(command, "*");
-	while(p)
-	{
-		s[num_command++]=p;
-		printf("%s\r\n",s[num_command-1]);
-		p= strtok(NULL,"*");
-	}
-	//sizeof(s)//获取的是数组s总的字节数
-	//数组s总的字节数初除以每一个元素的尺寸就是数组的个数sizeof(s)/sizeof(s[0])
-	printf("指令个数:%d\r\n",num_command);
-	while(i<num_command)
-	{
-		p1=strtok(s[i],"#");
-		printf("%s\r\n",p1);
-		p1=strtok(NULL,"#");
-		printf("%s\r\n",p1);
-		i++;
-	}
-	
-	//ptr=strcmp(s[0],s[1]);
-	//printf("是否一致：%d",ptr);	
-	return 0;
-}
 /*使用microLib的方法*/
- /* 
+ 
 int fputc(int ch, FILE *f)
 {
 	USART_SendData(USART1, (uint8_t) ch);
@@ -106,8 +76,50 @@ int GetKey (void)  {
 
     return ((int)(USART1->DR & 0x1FF));
 }
-*/
- 
+u16 string_num;
+u8 rx_status=0;
+extern char uart_comm[5],Init[5],tcp_Port[5],udp_Port[5];
+extern u16 vol_per;
+u16 string_num;
+u8 header_num=0;
+char string_process(char command[])
+{
+	//char command[] = "add|sub:1;switch:1;wave_mode:2;on|off:1";
+	char *comm1="\"add|sub\"", *comm2="\"switch\"",*comm3="\"wave_mode\"",*comm4="\"on|off\"";
+	char *s[5];//用存储分割之后字符串的数组
+	char *p,*p1;
+	char num_command=0;
+	int i=0,ptr; 
+
+	p = strtok(command, ",");
+	while(p)
+	{
+		s[num_command++]=p;
+		//printf("%s\r\n",s[num_command-1]);
+		p= strtok(NULL,",");
+	}
+	strncpy(uart_comm,s[0],5);
+	strncpy(Init,s[1],5);
+	strncpy(tcp_Port,s[2],5);
+	strncpy(udp_Port,s[3],5);
+	//sizeof(s)//获取的是数组s总的字节数
+	//数组s总的字节数初除以每一个元素的尺寸就是数组的个数sizeof(s)/sizeof(s[0])
+	//printf("指令个数:%d\r\n",num_command);
+	/*while(i<num_command)
+	{
+		p1=strtok(s[i],":");
+		printf("%s\r\n",p1);
+		p1=strtok(NULL,":");
+		printf("%s\r\n",p1);
+		i++;
+	}*/
+	
+	//ptr=strcmp(s[0],s[1]);
+	//printf("是否一致：%d",ptr);	
+	return 0;
+} 
+
+
 #if EN_USART1_RX   //如果使能了接收
 //串口1中断服务程序
 //注意,读取USARTx->SR能避免莫名其妙的错误   	
@@ -158,9 +170,8 @@ void uart_init(u32 bound){
   USART_Cmd(USART1, ENABLE);                    //使能串口1 
 
 }
-u16 string_num;
-u8 rx_status=0;
-extern char uart_comm[4];
+
+
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 	{
 	u8 i,Res;
@@ -173,26 +184,25 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 			switch (rx_status)
 			{
 				case 0:
-					if(Res=='z')
-						rx_status=1;
-					else
-						rx_status=0;
-					break;
+//					if(Res=='*')
+//						printf("{\"power\":%d}",vol_per);
+//          else					
+					switch (header_num)
+					{
+						case 0:
+								if(Res=='z') header_num=1; else {header_num=0;rx_status=0;}			
+						break;
+						case 1:
+                if(Res=='p') header_num=2; else {header_num=0;rx_status=0;}
+						break;
+						case 2:	
+							  if(Res=='f') {rx_status=1;header_num=0;} else {header_num=0;rx_status=0;}
+            break;
+					}							
+				break;	
 				case 1:
-					if(Res=='p')
-						rx_status=2;
-					else
-						rx_status=0;
-					break;
-				case 2:
-					if(Res=='f')
-						rx_status=3;
-					else
-						rx_status=0;
-					break;
-				case 3:
 					if(Res==0x0d)//等待空格
-						rx_status=4;
+						rx_status=2;
 					else
 					{
 						USART_RX_BUF[string_num]=Res ;
@@ -205,18 +215,16 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 						}//接收数据错误,重新开始接收	  
 					}		 
 					break;
-        case 4:
+        case 2:
 					if(Res==0x0a)//等待回车
 					{
-						 /*for(i=0;i<string_num;i++)
-						 {
-							 printf("%c",USART_RX_BUF[i]);
-							 
-						 }
-						 printf("\r\n");*/
-						 //string_process(USART_RX_BUF);
-						 strncpy(uart_comm,USART_RX_BUF,4);
-						 //printf("%s\r\n",uart_comm);
+						 string_process(USART_RX_BUF);
+						 
+						 /*printf("%s\r\n",uart_comm);
+						 printf("%s\r\n",Init);
+						 printf("%s\r\n",tcp_Port);
+						 printf("%s\r\n",udp_Port);*/
+						
 						 DETECT_USART_COMM=1;
 					 }
 					 memset(USART_RX_BUF,0,string_num);
@@ -265,7 +273,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 #endif
 } 
 #endif	
-/*********************??????******************************/
+/*********************接收数据缓存函数******************************/
 void Usart2_Put_Buf(u8 a[],u8 _cnt) 
 {
   u8 i;
@@ -276,7 +284,7 @@ void Usart2_Put_Buf(u8 a[],u8 _cnt)
   }
 }
 
-/*********************?????????*************************/
+/*********************波形产生函数*************************/
 void Data_Send_Senser(u16 a,u16 b,u16 c,u16 d)
 {
 	u8  _cnt=0,i,sum=0;

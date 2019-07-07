@@ -1,7 +1,10 @@
 #ifndef __USART_H
 #define __USART_H
 #include "stdio.h"	
-#include "sys.h" 
+#include "sys.h"
+#include "string.h"
+
+
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32开发板
@@ -35,6 +38,7 @@ extern u16 USART_RX_STA;         		//接收状态标记
 void uart_init(u32 bound);
 void Data_Send_Senser(u16 a,u16 b,u16 c,u16 d);
 char string_process(char command[]);
+
 #endif
 
 

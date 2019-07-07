@@ -110,7 +110,7 @@ void DMA1_Channel1_IRQHandler(void)
 		{
 			temp_val+=buffer[i]/40;
 		}
-		Data_Send_Senser((temp_val-1600),vol_per,flag2,flag3);
+		//Data_Send_Senser((temp_val-1600),vol_per,flag2,flag3);
 		temp_val=0;
 //		if(++t<40)
 //			temp_val+=ADC_ConvertedValue[0]/40;
