@@ -1,6 +1,6 @@
 #include "pid.h"               //增量式PID
 
-int Kp=4;       //	比例系数  Kp
+int Kp=2;       //	比例系数  Kp
 int Ki;      //	积分系数  Ki
 int Kd;     // 	微分系数  Kd
 

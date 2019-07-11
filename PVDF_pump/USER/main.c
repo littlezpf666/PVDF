@@ -25,15 +25,6 @@
 /************************************************
  PVDF_pump
 ************************************************/
-//u16 PWM=0;  //PWM变量
-//u8 num = 0;
-//u8 flagE = 0;
-//u8 flagup = 0;
-//u8 flagmod =0;
-//u8 t = 1;
-//u16 tempfeed ;
-//u16 feedt ;
-/******************************/
 
 
 /******************************/  
@@ -42,17 +33,46 @@
 extern u16 vol_per;
 
 
-
+extern uint16_t si[][256],triangle[][256],ex[][256],square[][256];
 char generate_wave()
 {
-	u8 time=0;
+	u16 time=0;
 	u16 y;
-		for(time=0;time<128;time++)
+		for(time=0;time<256;time++)
 	{
-		y=400*sin(6.28/255*(time+192))+1200;
-		printf("%d,",y);
+		//si[0][time]=400*sin(6.28/255*(time+192))+2800;
+		si[0][time]=400*sin(6.28/255*(time+192))+1400;
+		printf("%d,",si[0][time]);
 	}
-  printf("\n\r");
+	printf("\n\r");
+	for(time=0;time<256;time++)
+	{
+	 if(time<128)
+	 triangle[0][time]=(uint16_t)((float)800/128*time+1000);	 
+	 else
+	 triangle[0][time]=(uint16_t)(-(float)800/127*time+2600);
+	 //printf("time:%d,triangle:%d,",time,triangle[0][time]);
+	 printf("%d,",triangle[0][time]);
+	}  
+	  printf("\n\r");
+	for(time=0;time<256;time++)
+	{
+		 if(time<100)
+		 square[0][time]=1400;
+		 else
+		 square[0][time]=1000;
+		 printf("%d,",square[0][time]);
+	}
+	 printf("\n\r");
+	  for(time=0;time<256;time++)
+	{
+		 if(time<128)
+		 ex[0][time]=exp((double)5.99/128*time)+1400;
+		 else
+		 ex[0][time]=-exp((double)5.99/128*(time-128))+1400;
+		 printf("%d,",ex[0][time]);
+	}
+	  printf("\n\r");
 	return 0;
 }
 
@@ -86,7 +106,7 @@ char generate_wave()
 /********************DMA/ADC_init***********************/
 	DMA_Config(); 
 	Adc_Init();	//ADC初始化Adc_Init();
-  //generate_wave();
+  generate_wave();
   while(1)   
 	{
 		//printf("\r\nch1:%d ,ch2:%d",ADC_ConvertedValue[0],ADC_ConvertedValue[1]);
@@ -95,56 +115,6 @@ char generate_wave()
 	  touch_process();
 	 	key_process();
 		
-//		tempfeed = adcx;
-//		temp=(float)adcx*(3.3/4096);  //归一化
-//		adcx=temp;
-//		mod = MOD_func((double)temp); //逆模型
-//		//LCD_ShowxNum(156,250, mod*10000, 3,16,0);
-  		
-//		
-//		//LCD_ShowxNum(156,150,adcx,1,16,0);//显示电压值
-//		temp-=adcx;  //取出小数部分
-//		temp*=1000;
-//		//LCD_ShowxNum(172,150,temp, 3,16,0X80); //显示电压值小数部分
-//		
-
-//		
-//		
-//		//LCD_ShowxNum(130,190,flagE, 3,16,0);
-//		
-//		if(flagup==0) 
-//		{
-//				TIM_SetCompare2(TIM3,0);
-//				//LCD_ShowxNum(130,170,0,3,16,0);				
-//			
-//		}
-//		else if(flagup == 1)
-//		{
-//			if(flagmod ==0 )
-//			{
-//			if(tempfeed <2500)
-//				feedt  = 10000;
-//			else if(tempfeed > 2500  && tempfeed <2600)
-//				feedt  = 9900;
-//			else if(tempfeed > 2600 && tempfeed <2700)
-//				feedt  = 9850;
-//			else if(tempfeed > 2700  && tempfeed <2800)
-//				feedt  = 9800;
-//			else if(tempfeed > 2800 && tempfeed <2900)
-//				feedt  = 9600;
-//			else if(tempfeed > 2900 && tempfeed <3000)
-//				feedt  = 9000;
-//			else if(tempfeed > 3000 && tempfeed <3100)
-//				feedt  = 8000;
-//			else if(tempfeed > 3100 && tempfeed <3200)
-//				feedt  = 7000;
-//			else if(tempfeed >3200)
-//				feedt  = 6000;
-
-//			TIM_SetCompare2(TIM3,feedt );
-//			//LCD_ShowxNum(130,170,feedt /480,3,16,0);	
-//		}
-//		}
 	}	 
  }
 

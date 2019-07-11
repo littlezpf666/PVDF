@@ -91,47 +91,65 @@ void SysTick_Handler(void)
   * @retval None
   */
 extern uint16_t ADC_ConvertedValue[2];
+extern char feedback_control;
+uint16_t DDS_step=0,DDSM=1;
+uint16_t temp[1][256];//注意数组访问时不能超出范围，否则会出现卡死
 u32 temp_val=0;
 u16 vol_per;
-uint16_t flag1=0,flag2=0,flag3=0;
+
 uint16_t buffer[40]={0};
 void DMA1_Channel1_IRQHandler(void)
-{                                  
+{  
+  static char t;	
   char i;
 	if(DMA_GetFlagStatus(DMA1_FLAG_GL1)!=RESET)
 	{ 
-		vol_per=(int)((float)ADC_ConvertedValue[1]/3400*100);  //归一化	
-    buffer[0]=ADC_ConvertedValue[0];	
-		for(i=40;i>0;i--)
+		/*********************求电源电压***************************/
+		vol_per=(int)((float)ADC_ConvertedValue[1]/3500*100);  //归一化	
+		if(feedback_control)
 		{
-			buffer[i]=buffer[i-1];
+				/*********************滑动滤波***************************/
+				/*buffer[0]=ADC_ConvertedValue[0];	
+				for(i=40;i>0;i--)
+				{
+					buffer[i]=buffer[i-1];
+				}
+				for(i=0;i<40;i++)
+				{
+					temp_val+=buffer[i]/40;
+				}
+				Data_Send_Senser(temp[0][DDS_step],0,0,0);
+				temp_val=0;*/
+				/*********************均值滤波***************************/
+				if(++t<40)
+					temp_val+=ADC_ConvertedValue[0]/40;
+				else if(t==40)
+				{			
+					//printf("DDS_step:%d,temp:%d\r\n",DDS_step,temp[0][DDS_step]);
+					 /*if(Regulation(temp[0][DDS_step], temp_val)>0)
+					 {
+						 TIM_SetCompare2(TIM3, Regulation(temp[0][DDS_step], temp_val));
+						 GAS=0;
+					 }
+					 else
+					 {
+						 TIM_SetCompare2(TIM3, 0);
+						 GAS=1;
+					 }*/
+					if(temp_val>3000)
+					{
+						TIM_SetCompare2(TIM3, 0);
+						TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
+					}
+					else
+					{
+						TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
+					}
+					Data_Send_Senser(temp_val,temp[0][DDS_step],0,0);
+					temp_val=0;
+					t=0;
+				}
 		}
-		for(i=0;i<40;i++)
-		{
-			temp_val+=buffer[i]/40;
-		}
-		//Data_Send_Senser((temp_val-1600),vol_per,flag2,flag3);
-		temp_val=0;
-//		if(++t<40)
-//			temp_val+=ADC_ConvertedValue[0]/40;
-//		else if(t==40)
-//		{
-//			
-//			//printf("平均电压%d\r\n",temp_val);
-////			 if(Regulation(3600, temp_val)>0)
-////			 {
-////				 TIM_SetCompare2(TIM3, Regulation(3600, temp_val));
-////				 GAS=0;
-////			 }
-////			 else
-////			 {
-////				 TIM_SetCompare2(TIM3, 0);
-////				 GAS=1;
-////			 }
-//			Data_Send_Senser(10*(temp_val-3200),flag1,flag2,flag3);//??????
-//      temp_val=0;
-//		  t=0;
-//		}
 		DMA_ClearFlag(DMA1_FLAG_GL1);
 	}		    
 }
@@ -140,51 +158,64 @@ void DMA1_Channel1_IRQHandler(void)
   * @param  None
   * @retval None
   */
-uint16_t DDS_step=0,DDSM=1;
-uint16_t temp[1][256];//注意数组访问时不能超出范围，否则会出现卡死
-extern uint16_t si[][256],sawtooth[][256],triangle[][256],ex[][256];
+
+extern uint16_t si[][256],triangle[][256],ex[][256],square[][256];
 extern char amplitude_level,wave_pattern;
-uint8_t mode_status=0;
-uint8_t stop_status=0;
+uint8_t mode_status=0,stop_status=0;
+uint8_t max_step;
+uint8_t tim3_counter=0;
 void TIM3_IRQHandler(void)
 {
 	TIM_OCInitTypeDef  TIM_OCInitStructure;
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)!=RESET)
 	{
-		DDS_step=DDS_step+DDSM;
-		if(DDS_step>255)//放气阶段停止占空比为0，气阀放气
-		 {
-			DDS_step=0;
-		 }
-		if(DDS_step<129)//放气阶段停止占空比为0，气阀放气
-		 {
-			 GAS=0;
-			 switch (wave_pattern)
+		if(tim3_counter++==1)
+		{
+			if(DDS_step>252)//放气阶段停止占空比为0，气阀放气
 			 {
-				  case 0:
-						temp[0][DDS_step]=(amplitude_level+1)*(si[0][DDS_step]-800)+800;
+				DDS_step=0;
+			 }
+			else{
+			DDS_step=DDS_step+DDSM;	
+			}
+			tim3_counter=0;
+		}
+		 switch (wave_pattern)
+			 {
+				  case 0:					
+					 temp[0][DDS_step]=si[0][DDS_step]+amplitude_level*100;
 			     break;
 			    case 1:
-						temp[0][DDS_step]=sawtooth[amplitude_level][DDS_step];
+						temp[0][DDS_step]=triangle[0][DDS_step]+amplitude_level*100;
 			     break;
-				  case 3:
-						temp[0][DDS_step]=triangle[amplitude_level][DDS_step];
+				  case 2:
+						temp[0][DDS_step]=square[0][DDS_step]+amplitude_level*80;
 			     break;
-					case 4:
-						temp[0][DDS_step]=ex[amplitude_level][DDS_step];
+					case 3:
+						temp[0][DDS_step]=ex[0][DDS_step]+amplitude_level*100;
 					 break;
 			 }
-			 TIM_SetCompare2(TIM3, temp[0][DDS_step]);
-			
-//			if(mode_status==0)
-//			mode_status++;
-//			else if(mode_status==1)
-//			mode_status=0;	
+		switch(DDSM)
+		{
+			case 1:
+				max_step=90;
+				break;
+			case 2:
+				max_step=130;
+			  break;
+			case 3:
+				max_step=180;
+				break;
+		}
+		if(DDS_step<max_step)//放气阶段停止占空比为0，气阀放气
+		 {
+			 GAS=0;
+			 TIM_SetCompare2(TIM3, temp[0][DDS_step]);	
 		 }
 		 else//在吸气阶段电机不断改变占空比
 		 {
-			 TIM_SetCompare2(TIM3, 0);
-			 GAS=1; 
+			  TIM_SetCompare2(TIM3, 0);
+			  GAS=1; 
 		 }
     
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
@@ -214,13 +245,13 @@ void TIM4_IRQHandler(void)
 		if(tim4_counter2==time_interval)
 			{
 				stop_status=0;
-				GAS=0;
+				
 			}
 			if(tim4_counter2==time_interval*2)
 			{
 				stop_status=1;
 			  tim4_counter2=0;
-				GAS=1;
+				
 	      
 			}	
 		TIM_ClearITPendingBit(TIM4,TIM_IT_Update);
