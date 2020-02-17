@@ -1,0 +1,9 @@
+..\output\jsonencode.o: CJson\JsonEncode.c
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+..\output\jsonencode.o: CJson\cJSON.h
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\float.h
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
+..\output\jsonencode.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h

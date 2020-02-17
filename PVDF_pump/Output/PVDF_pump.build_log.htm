@@ -1,0 +1,143 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.17.0.0
+Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: Pengfei Zhao, shanghai normal university, LIC=JL201-CAP48-X6PQZ-JA264-KVDYP-HZ1Z3
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Standard  Version: 5.17
+Toolchain Path:  D:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 1 (build 61)
+Assembler:       Armasm.exe V5.06 update 1 (build 61)
+Linker/Locator:  ArmLink.exe V5.06 update 1 (build 61)
+Library Manager: ArmAr.exe V5.06 update 1 (build 61)
+Hex Converter:   FromElf.exe V5.06 update 1 (build 61)
+CPU DLL:         SARMCM3.DLL V5.17
+Dialog DLL:      DCM.DLL V1.13.4.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.18.0
+Dialog DLL:      TCM.DLL V1.14.6.0
+ 
+<h2>Project:</h2>
+F:\STM32\PVDF\PVDF_pump\USER\PVDF_pump.uvprojx
+Project File Date:  07/07/2019
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 1 (build 61)', folder: 'D:\Keil_v5\ARM\ARMCC\Bin'
+Build target 'PVDF_pump'
+compiling system_stm32f10x.c...
+compiling stm32f10x_it.c...
+stm32f10x_it.c(104): warning:  #177-D: variable "i" was declared but never referenced
+    char i;
+stm32f10x_it.c(169): warning:  #177-D: variable "TIM_OCInitStructure" was declared but never referenced
+  	TIM_OCInitTypeDef  TIM_OCInitStructure;
+stm32f10x_it.c(290): warning:  #1-D: last line of file ends without a newline
+  }
+stm32f10x_it.c: 3 warnings, 0 errors
+compiling main.c...
+.\BSP\NVIC\nvic.h(10): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\Interaction\interaction.h(13): warning:  #1295-D: Deprecated declaration scr0_content - give arg types
+  void scr0_content();
+.\Interaction\interaction.h(14): warning:  #1295-D: Deprecated declaration scr1_content - give arg types
+  void scr1_content();
+.\Interaction\interaction.h(16): warning:  #1-D: last line of file ends without a newline
+  #endif
+main.c(40): warning:  #177-D: variable "y" was declared but never referenced
+  	u16 y;
+main.c(81): warning:  #177-D: variable "tp_x" was declared but never referenced
+    char tp_x;
+main.c(82): warning:  #177-D: variable "adcx" was declared but never referenced
+    u16 adcx; //adc??Á¿
+main.c(84): warning:  #177-D: variable "mod" was declared but never referenced
+  	double mod;
+main.c(85): warning:  #177-D: variable "command" was declared but never referenced
+      char command[] = "add|sub:1;switch:1;wave_mode:2;on|off:1";
+main.c: 9 warnings, 0 errors
+assembling startup_stm32f10x_md.s...
+compiling interaction.c...
+Interaction\interaction.h(13): warning:  #1295-D: Deprecated declaration scr0_content - give arg types
+  void scr0_content();
+Interaction\interaction.h(14): warning:  #1295-D: Deprecated declaration scr1_content - give arg types
+  void scr1_content();
+Interaction\interaction.h(16): warning:  #1-D: last line of file ends without a newline
+  #endif
+Interaction\interaction.c(204): warning:  #1-D: last line of file ends without a newline
+  }
+Interaction\interaction.c: 4 warnings, 0 errors
+compiling pid.c...
+BSP\PID\pid.c(12): warning:  #550-D: variable "PrevError" was set but never used
+  	int PrevError;  //	Ç°Á½???ó²?  ekt-2t
+BSP\PID\pid.c: 1 warning, 0 errors
+compiling GUI.c...
+compiling key.c...
+.\BSP\NVIC\nvic.h(10): warning:  #1-D: last line of file ends without a newline
+  #endif
+BSP\KEY\key.c: 1 warning, 0 errors
+compiling led.c...
+compiling mod.c...
+compiling timer.c...
+.\BSP\NVIC\nvic.h(10): warning:  #1-D: last line of file ends without a newline
+  #endif
+BSP\TIMER\timer.c: 1 warning, 0 errors
+compiling touch.c...
+compiling lcd.c...
+compiling nvic.c...
+BSP\NVIC\nvic.h(10): warning:  #1-D: last line of file ends without a newline
+  #endif
+BSP\NVIC\nvic.c(69): warning:  #1-D: last line of file ends without a newline
+  }
+BSP\NVIC\nvic.c: 2 warnings, 0 errors
+compiling adc.c...
+compiling dma.c...
+.\BSP\NVIC\nvic.h(10): warning:  #1-D: last line of file ends without a newline
+  #endif
+BSP\DMA\dma.c: 1 warning, 0 errors
+compiling delay.c...
+compiling usart.c...
+..\SYSTEM\usart\usart.c(88): warning:  #177-D: variable "comm1" was declared but never referenced
+  	char *comm1="\"add|sub\"", *comm2="\"switch\"",*comm3="\"wave_mode\"",*comm4="\"on|off\"";
+..\SYSTEM\usart\usart.c(88): warning:  #177-D: variable "comm2" was declared but never referenced
+  	char *comm1="\"add|sub\"", *comm2="\"switch\"",*comm3="\"wave_mode\"",*comm4="\"on|off\"";
+..\SYSTEM\usart\usart.c(88): warning:  #177-D: variable "comm3" was declared but never referenced
+  	char *comm1="\"add|sub\"", *comm2="\"switch\"",*comm3="\"wave_mode\"",*comm4="\"on|off\"";
+..\SYSTEM\usart\usart.c(88): warning:  #177-D: variable "comm4" was declared but never referenced
+  	char *comm1="\"add|sub\"", *comm2="\"switch\"",*comm3="\"wave_mode\"",*comm4="\"on|off\"";
+..\SYSTEM\usart\usart.c(90): warning:  #177-D: variable "p1" was declared but never referenced
+  	char *p,*p1;
+..\SYSTEM\usart\usart.c(92): warning:  #177-D: variable "i" was declared but never referenced
+  	int i=0,ptr; 
+..\SYSTEM\usart\usart.c(92): warning:  #177-D: variable "ptr" was declared but never referenced
+  	int i=0,ptr; 
+..\SYSTEM\usart\usart.c(221): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "char *"
+  						 string_process(USART_RX_BUF);
+..\SYSTEM\usart\usart.c(177): warning:  #177-D: variable "i" was declared but never referenced
+  	u8 i,Res;
+..\SYSTEM\usart\usart.c: 9 warnings, 0 errors
+compiling sys.c...
+compiling core_cm3.c...
+compiling misc.c...
+compiling stm32f10x_adc.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_usart.c...
+compiling stm32f10x_tim.c...
+compiling stm32f10x_dma.c...
+compiling stm32f10x_exti.c...
+compiling stm32f10x_spi.c...
+linking...
+Program Size: Code=26572 RO-data=20240 RW-data=2180 ZI-data=2060  
+FromELF: creating hex file...
+"..\Output\PVDF_pump.axf" - 0 Error(s), 31 Warning(s).
+
+<h2>Collection of Component include folders:</h2>
+  F:\STM32\PVDF\PVDF_pump\USER\RTE
+  D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.1.0\Device\Include
+
+<h2>Collection of Component Files used:</h2>
+Build Time Elapsed:  00:00:20
+</pre>
+</body>
+</html>
